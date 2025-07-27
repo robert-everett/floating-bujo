@@ -7,7 +7,7 @@
 
 ## Archive Overview
 
-January 2025 marks the foundational decision-making period for Floating Bujo as the world's first Claude-native open source project. This archive contains all architectural, requirements, implementation, and methodology decisions that established the project's technical foundation and community governance structure.
+January 2025 marks the foundational decision-making period for Floating Bujo, a Claude-assisted open source project. This archive contains all architectural, requirements, implementation, and methodology decisions that established the project's technical foundation and community governance structure.
 
 ## Monthly Decision Summary
 
@@ -84,7 +84,7 @@ gantt
 **Community Impact:** Enables community participation in governance
 
 **Key Rationale Points:**
-- Transparency essential for Claude-native development credibility
+- Transparency essential for Claude-assisted development credibility
 - Community audit enables continuous methodology improvement
 - Decision rationale documentation supports future reference
 - Standardized templates ensure consistent quality
@@ -185,14 +185,14 @@ Based on January decisions, Priority 1 implementation can proceed:
 
 ## Historical Significance
 
-January 2025 represents the foundational month for Claude-native open source development methodology. The decisions made this month:
+January 2025 represents the foundational month for Claude-assisted open source development methodology. The decisions made this month:
 
 - **Established technical viability** of AI-first development approach
 - **Created community governance** framework for transparent development
 - **Validated core architecture** for system-wide desktop applications
 - **Demonstrated successful** human-AI collaboration patterns
 
-These decisions will serve as reference points for future Claude-native projects and methodology evolution.
+These decisions will serve as reference points for future Claude-assisted projects and methodology evolution.
 
 ---
 

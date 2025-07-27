@@ -1,7 +1,7 @@
 # Decision Documentation Templates
 
 **Purpose:** Standardized templates for transparent decision documentation  
-**Scope:** All categories of decisions in Claude-native development  
+**Scope:** All categories of decisions in Claude-assisted development  
 **Usage:** Copy template, fill in all sections, submit for community review
 
 ## Architecture Decision Record (ADR) Template

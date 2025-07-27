@@ -83,7 +83,7 @@
 #### Process Evolution
 | ID | Title | Date | Status | Summary |
 |---|---|---|---|---|
-| MDR-001 | [Community Audit Documentation System](../decisions/methodology/MDR-001-audit-system.md) | 2025-01-26 | Accepted | Transparent decision tracking for Claude-native development |
+| MDR-001 | [Community Audit Documentation System](../decisions/methodology/MDR-001-audit-system.md) | 2025-01-26 | Accepted | Transparent decision tracking for Claude-assisted development |
 
 #### Claude-Native Patterns
 | ID | Title | Date | Status | Summary |
@@ -181,7 +181,7 @@ gantt
 - `proof-of-concept`, `testing`, `development`, `code-quality`
 
 **Methodology Keywords:**
-- `claude-native`, `audit`, `community`, `transparency`, `process`
+- `claude-assisted`, `audit`, `community`, `transparency`, `process`
 
 ### Filter by Attributes
 

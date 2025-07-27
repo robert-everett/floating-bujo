@@ -6,7 +6,7 @@
 
 ## Overview
 
-Floating Bujo operates under full transparency principles as the world's first Claude-native open source project. Every decision affecting project direction is documented with complete rationale and is subject to community audit. This document establishes procedures for conducting thorough, constructive audits of project decisions.
+Floating Bujo operates under full transparency principles as a Claude-assisted open source project. Every decision affecting project direction is documented with complete rationale and is subject to community audit. This document establishes procedures for conducting thorough, constructive audits of project decisions.
 
 ## Audit Authority and Rights
 
@@ -14,7 +14,7 @@ Floating Bujo operates under full transparency principles as the world's first C
 - **Community members** - Contributors, users, interested developers
 - **External auditors** - Security researchers, methodology experts, academics
 - **Future maintainers** - Those considering project stewardship
-- **AI researchers** - Those studying Claude-native development patterns
+- **AI researchers** - Those studying Claude-assisted development patterns
 
 ### Audit Rights
 - **Full access** to all decision documentation
@@ -83,18 +83,18 @@ Floating Bujo operates under full transparency principles as the world's first C
 - **Code quality standards** maintenance
 - **Development velocity** optimization
 - **Technical debt** management
-- **Claude-native effectiveness** measurement
+- **Claude-assisted effectiveness** measurement
 
 **Audit Questions:**
 - Do implementation choices maintain code quality?
 - Are development approaches optimally efficient?
 - Is technical debt being properly managed?
-- Are Claude-native patterns proving effective?
+- Are Claude-assisted patterns proving effective?
 
 ### Methodology Audit (MDR Review)
 
 **Process and Methodology Decisions:**
-- Claude-native development evolution
+- Claude-assisted development evolution
 - Human-AI collaboration patterns
 - Review and validation processes
 - Community contribution workflows
@@ -106,7 +106,7 @@ Floating Bujo operates under full transparency principles as the world's first C
 - **Methodology innovation** and learning capture
 
 **Audit Questions:**
-- Are Claude-native processes delivering promised benefits?
+- Are Claude-assisted processes delivering promised benefits?
 - Can community members effectively contribute?
 - Is human oversight sufficient for AI-generated content?
 - Are methodology innovations being properly documented?
@@ -389,4 +389,4 @@ Floating Bujo operates under full transparency principles as the world's first C
 
 ---
 
-**These audit procedures ensure that every decision in Floating Bujo can be thoroughly reviewed by the community, maintaining the transparency and quality that make Claude-native development methodology trustworthy and effective.**
+**These audit procedures ensure that every decision in Floating Bujo can be thoroughly reviewed by the community, maintaining the transparency and quality that make Claude-assisted development methodology trustworthy and effective.**

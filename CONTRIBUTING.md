@@ -1,14 +1,14 @@
 # Contributing to Floating Bujo
-## The World's First Claude-Native Open Source Project
+## A Claude-Assisted Open Source Project
 
 Welcome to pioneering the future of collaborative software development! 🚀
 
-Floating Bujo is experimenting with a revolutionary **Claude-native development workflow** where Claude Code handles implementation while humans focus on requirements engineering, validation, and integration.
+Floating Bujo uses a **Claude-assisted development workflow** where Claude Code handles implementation while humans focus on requirements engineering, validation, and integration.
 
-## 🎯 Why Claude-Native Development?
+## 🎯 Why Claude-Assisted Development?
 
 Traditional open source: Human writes code → Human reviews code → Merge
-**Claude-native approach:** Human refines requirements → Claude Code implements → Human validates → Integrate
+**Claude-assisted approach:** Human refines requirements → Claude Code implements → Human validates → Integrate
 
 This approach allows contributors to focus on **problem-solving and design thinking** rather than syntax and boilerplate, while leveraging AI for consistent, high-quality code generation.
 
@@ -132,7 +132,7 @@ claude code test integration --modules "window-manager,file-operations"
 1. Experiment with different Claude Code approaches
 2. Optimize prompt patterns for better code generation
 3. Document successful methodologies
-4. Help refine our Claude-native development process
+4. Help refine our Claude-assisted development process
 
 **Areas to Explore:**
 - **Requirement-to-code translation** patterns
@@ -291,7 +291,7 @@ We follow the [Contributor Covenant](CODE_OF_CONDUCT.md). This is a learning env
 
 ## 📈 Success Metrics for Contributors
 
-We're tracking the success of our Claude-native approach:
+We're tracking the success of our Claude-assisted approach:
 
 ### Individual Contribution Success
 - **Requirements Enhancement** - Clear, implementable acceptance criteria
@@ -303,13 +303,13 @@ We're tracking the success of our Claude-native approach:
 - **Methodology Documentation** - Growing library of successful approaches
 - **Knowledge Sharing** - Contributors learning from each other's techniques
 - **Project Velocity** - Faster development through effective Claude Code usage
-- **Innovation** - New patterns and approaches that advance Claude-native development
+- **Innovation** - New patterns and approaches that advance Claude-assisted development
 
 ## 🎉 Recognition
 
-Contributors who help pioneer this Claude-native approach will be:
+Contributors who help pioneer this Claude-assisted approach will be:
 - **Featured in project documentation** as methodology pioneers
-- **Credited in blog posts and talks** about Claude-native development
+- **Credited in blog posts and talks** about Claude-assisted development
 - **Invited to co-author** case studies and methodology papers
 - **Given maintainer status** for significant methodology contributions
 

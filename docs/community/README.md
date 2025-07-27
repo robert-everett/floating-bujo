@@ -1,12 +1,12 @@
 # Community Audit Documentation System
 
 **Established:** 2025-01-26  
-**Purpose:** Transparent decision tracking for Claude-native development methodology  
+**Purpose:** Transparent decision tracking for Claude-assisted development methodology  
 **Scope:** All architectural, technical, and strategic decisions affecting project direction
 
 ## Overview
 
-This documentation system provides complete transparency into the decision-making process for Floating Bujo as the world's first Claude-native open source project. Every significant decision is documented with full rationale, alternative considerations, and future implications to enable community audit and learning.
+This documentation system provides complete transparency into the decision-making process for Floating Bujo, a Claude-assisted open source project. Every significant decision is documented with full rationale, alternative considerations, and future implications to enable community audit and learning.
 
 ## Documentation Structure
 
@@ -17,7 +17,7 @@ docs/community/
 │   ├── architecture/           # Technical architecture decisions
 │   ├── requirements/           # Requirements and scope decisions
 │   ├── implementation/         # Development approach decisions
-│   └── methodology/            # Claude-native process decisions
+│   └── methodology/            # Claude-assisted process decisions
 ├── audit-trail/                # Chronological decision history
 │   ├── 2025-01/               # Monthly decision archives
 │   └── decision-index.md      # Searchable decision reference
@@ -54,7 +54,7 @@ docs/community/
 - Testing strategy choices
 
 **🔬 Methodology Decisions (MDR)**
-- Claude-native process evolution
+- Claude-assisted process evolution
 - Prompt engineering patterns
 - Human-AI collaboration approaches
 - Documentation standards
@@ -147,7 +147,7 @@ Every decision must include:
 
 ### Why Rationale Matters
 
-In Claude-native development, understanding *why* decisions were made is crucial for:
+In Claude-assisted development, understanding *why* decisions were made is crucial for:
 - **Learning from AI collaboration patterns**
 - **Validating prompt engineering approaches**
 - **Enabling community contributions**
@@ -223,7 +223,7 @@ The community can:
 **Decision Index:**
 - Searchable by keyword, category, date
 - Cross-referenced by impact and relationship
-- Tagged by Claude-native methodology elements
+- Tagged by Claude-assisted methodology elements
 
 **Quick Reference:**
 - Current active decisions summary
@@ -269,7 +269,7 @@ Special attention to decisions involving:
 
 ### Methodology Evolution
 
-Track how Claude-native approaches evolve:
+Track how Claude-assisted approaches evolve:
 - **Successful patterns** documented and reused
 - **Failed approaches** analyzed for lessons
 - **Process improvements** implemented iteratively
@@ -297,4 +297,4 @@ Track how Claude-native approaches evolve:
 
 ---
 
-**This documentation system ensures that every decision in Floating Bujo's development is transparent, well-reasoned, and auditable by the community. It serves as both a historical record and a learning resource for advancing Claude-native development methodology.**
+**This documentation system ensures that every decision in Floating Bujo's development is transparent, well-reasoned, and auditable by the community. It serves as both a historical record and a learning resource for advancing Claude-assisted development methodology.**
