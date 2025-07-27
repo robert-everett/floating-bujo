@@ -19,25 +19,26 @@
             overflow: hidden;
             user-select: none;
             -webkit-app-region: drag;
+            font-size: clamp(12px, 1.2vw, 16px); /* Responsive base font size */
         }
 
         .container {
             display: flex;
             flex-direction: column;
             height: 100vh;
-            padding: 8px;
-            gap: 6px;
+            padding: clamp(6px, 1.5vw, 12px);
+            gap: clamp(4px, 1vw, 8px);
         }
 
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 4px 8px;
+            padding: clamp(3px, 0.8vw, 6px) clamp(6px, 1.5vw, 12px);
             background: #2d2d2d;
-            border-radius: 4px;
-            font-size: 12px;
-            min-height: 24px;
+            border-radius: clamp(3px, 0.8vw, 6px);
+            font-size: clamp(10px, 1vw, 14px);
+            min-height: clamp(20px, 5vw, 30px);
             -webkit-app-region: drag;
         }
 
@@ -114,16 +115,16 @@
             flex: 1;
             background: #2d2d2d;
             border: 1px solid #404040;
-            border-radius: 6px;
-            padding: 12px;
+            border-radius: clamp(4px, 1vw, 8px);
+            padding: clamp(8px, 2vw, 16px);
             color: #e0e0e0;
-            font-size: 14px;
+            font-size: clamp(12px, 1.2vw, 16px);
             line-height: 1.4;
             resize: none;
             outline: none;
             font-family: inherit;
-            min-height: 40px;
-            max-height: 200px;
+            min-height: clamp(30px, 8vw, 50px);
+            max-height: clamp(120px, 30vw, 250px);
             overflow-y: auto;
             transition: border-color 0.2s ease;
         }
@@ -177,14 +178,14 @@
             background: #0ea5e9;
             color: white;
             border: none;
-            border-radius: 4px;
-            padding: 6px 12px;
-            font-size: 12px;
+            border-radius: clamp(3px, 0.8vw, 6px);
+            padding: clamp(4px, 1vw, 8px) clamp(8px, 2vw, 16px);
+            font-size: clamp(10px, 1vw, 14px);
             cursor: pointer;
             transition: background-color 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: clamp(2px, 0.5vw, 6px);
         }
 
         .action-btn:hover {
@@ -476,10 +477,12 @@
                     const result = await window.electronAPI.undoLastNote();
                     
                     if (result.success) {
-                        this.autoExpander.setValue(this.lastSavedNote);
+                        // Use the restored text from the backend (more reliable than frontend storage)
+                        const restoredText = result.restoredText || this.lastSavedNote;
+                        this.autoExpander.setValue(restoredText);
                         this.lastSavedNote = '';
                         this.hideUndoButton();
-                        this.showFeedback('Note restored for editing');
+                        this.showFeedback('Entry undone and restored for editing');
                         this.updateStatus('ready', 'Ready');
                     } else {
                         throw new Error(result.error || 'Undo failed');
@@ -487,6 +490,10 @@
                 } catch (error) {
                     console.error('Error undoing note:', error);
                     this.showFeedback(`Undo error: ${error.message}`, 'error');
+                    
+                    // Hide undo button on error
+                    this.hideUndoButton();
+                    this.lastSavedNote = '';
                 }
             }
 
@@ -513,11 +520,11 @@
                 this.actionButtons.innerHTML = '';
                 this.actionButtons.appendChild(undoBtn);
 
-                // Auto-hide after 10 seconds
+                // Auto-hide after 30 seconds to match backend timing
                 this.undoTimer = setTimeout(() => {
                     this.hideUndoButton();
                     this.lastSavedNote = '';
-                }, 10000);
+                }, 30000);
             }
 
             hideUndoButton() {
@@ -578,25 +585,23 @@
             window.bujoHandler = new BujoInputHandler();
         });
 
-        // Expose IPC API for main process communication
-        window.electronAPI = {
-            saveNote: (noteText) => {
-                // This will be replaced by proper IPC preload script
-                return window.require('electron').ipcRenderer.invoke('save-note', noteText);
-            },
-            
-            undoLastNote: () => {
-                return window.require('electron').ipcRenderer.invoke('undo-last-note');
-            },
-            
-            hideWindow: () => {
-                return window.require('electron').ipcRenderer.invoke('hide-window');
-            },
-            
-            quitApp: () => {
-                return window.require('electron').ipcRenderer.invoke('quit-app');
-            }
-        };
+        // Security: electronAPI is now provided by secure preload script
+        // No direct Node.js/Electron API access allowed in renderer process
+        
+        // Validate that secure preload script loaded correctly
+        if (!window.electronAPI) {
+            console.error('SECURITY ERROR: electronAPI not available - preload script failed to load');
+            document.body.innerHTML = '<div style="color: red; padding: 20px;">Security Error: Application not properly configured</div>';
+        } else {
+            console.log('✅ Secure electronAPI loaded via preload script');
+        }
+        
+        // Development security testing
+        if (window.securityTest) {
+            console.log('🔍 Running security validation tests...');
+            window.securityTest.testNodeAccess();
+            window.securityTest.testAPIExposure();
+        }
     </script>
 </body>
 </html>

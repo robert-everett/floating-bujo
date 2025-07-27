@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floating Bujo - Setup Wizard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Segoe UI Variable', system-ui, sans-serif;
+            background: #1e1e1e;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .setup-container {
+            width: 500px;
+            min-height: 400px;
+            background: #2d2d2d;
+            border-radius: 12px;
+            border: 1px solid #404040;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            color: #0ea5e9;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #a0a0a0;
+            font-size: 14px;
+        }
+
+        .setup-step {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+        }
+
+        .setup-step.active {
+            display: flex;
+        }
+
+        .step-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #e0e0e0;
+        }
+
+        .step-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .mode-option {
+            background: #404040;
+            border: 2px solid #555;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .mode-option:hover {
+            border-color: #0ea5e9;
+            background: #4a4a4a;
+        }
+
+        .mode-option.selected {
+            border-color: #0ea5e9;
+            background: #1e3a5f;
+        }
+
+        .mode-option .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .mode-option .title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .mode-option .description {
+            font-size: 13px;
+            color: #a0a0a0;
+            line-height: 1.4;
+        }
+
+        .mode-option .status {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .status.available {
+            background: #10b981;
+            color: white;
+        }
+
+        .status.not-found {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .folder-input {
+            margin-top: 16px;
+        }
+
+        .folder-input label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #e0e0e0;
+        }
+
+        .folder-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .folder-row input {
+            flex: 1;
+            background: #1e1e1e;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 8px 12px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        .folder-row input:focus {
+            outline: none;
+            border-color: #0ea5e9;
+        }
+
+        .browse-btn {
+            background: #374151;
+            color: #d1d5db;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .browse-btn:hover {
+            background: #4b5563;
+        }
+
+        .validation-message {
+            margin-top: 8px;
+            font-size: 12px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .validation-message.success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .validation-message.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid #404040;
+        }
+
+        .nav-btn {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            background: #0284c7;
+        }
+
+        .nav-btn:disabled {
+            background: #404040;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        .nav-btn.secondary {
+            background: #374151;
+            color: #d1d5db;
+        }
+
+        .nav-btn.secondary:hover {
+            background: #4b5563;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #404040;
+            border-radius: 2px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #0ea5e9;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .step-indicator {
+            text-align: center;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: #a0a0a0;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #404040;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            font-weight: 500;
+        }
+
+        .summary-value {
+            color: #0ea5e9;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="header">
+            <h1>Floating Bujo Setup</h1>
+            <p>Configure your floating bullet journal for the perfect workflow</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="step-indicator" id="stepIndicator">Step 1 of 3</div>
+
+        <!-- Step 1: Mode Selection -->
+        <div class="setup-step active" id="step1">
+            <div class="step-title">Choose Your Mode</div>
+            <div class="step-content">
+                <div class="mode-option" id="obsidianMode" data-mode="obsidian">
+                    <div class="status" id="obsidianStatus">Checking...</div>
+                    <div class="icon">🔮</div>
+                    <div class="title">Obsidian Mode</div>
+                    <div class="description">
+                        Integrate with your existing Obsidian vault. Notes will be saved directly to your vault with proper linking and tagging.
+                    </div>
+                </div>
+
+                <div class="mode-option" id="markdownMode" data-mode="markdown">
+                    <div class="status available">Available</div>
+                    <div class="icon">📝</div>
+                    <div class="title">Markdown Mode</div>
+                    <div class="description">
+                        Save notes as plain markdown files. Perfect for users who prefer simple file management or use other note-taking apps.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Folder Configuration -->
+        <div class="setup-step" id="step2">
+            <div class="step-title">Configure Storage Location</div>
+            <div class="step-content">
+                <div class="folder-input">
+                    <label for="folderPath" id="folderLabel">Notes Folder:</label>
+                    <div class="folder-row">
+                        <input type="text" id="folderPath" placeholder="Select folder for your notes...">
+                        <button class="browse-btn" id="browseBtn">Browse</button>
+                    </div>
+                    <div class="validation-message" id="folderValidation" style="display: none;"></div>
+                </div>
+
+                <div id="obsidianVaultInfo" style="display: none;">
+                    <div style="margin-top: 16px; padding: 16px; background: rgba(14, 165, 233, 0.1); border-radius: 8px; border: 1px solid rgba(14, 165, 233, 0.3);">
+                        <div style="font-weight: 500; margin-bottom: 8px;">Obsidian Integration</div>
+                        <div style="font-size: 13px; color: #a0a0a0; line-height: 1.4;">
+                            Your notes will be saved to a specific folder within your Obsidian vault. Choose a subfolder below to organize your active notes.
+                        </div>
+                    </div>
+                    
+                    <div class="folder-input" style="margin-top: 16px;">
+                        <label for="subfolderSelect">Subfolder within vault:</label>
+                        <div class="folder-row">
+                            <select id="subfolderSelect" style="flex: 1; background: #1e1e1e; border: 1px solid #555; border-radius: 4px; padding: 8px 12px; color: #e0e0e0; font-size: 14px;">
+                                <option value="">Loading folders...</option>
+                            </select>
+                            <button class="browse-btn" id="browseSubfolderBtn">Browse</button>
+                        </div>
+                        <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
+                            <input type="text" id="newFolderName" placeholder="New folder name..." style="flex: 1; background: #1e1e1e; border: 1px solid #555; border-radius: 4px; padding: 6px 8px; color: #e0e0e0; font-size: 12px; display: none;">
+                            <button class="browse-btn" id="createFolderBtn" style="font-size: 12px; padding: 6px 12px;">+ New Folder</button>
+                        </div>
+                        <div style="font-size: 12px; color: #a0a0a0; margin-top: 4px;">
+                            Select from existing folders or create a new one
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Summary -->
+        <div class="setup-step" id="step3">
+            <div class="step-title">Setup Complete</div>
+            <div class="step-content">
+                <div style="margin-bottom: 24px;">
+                    <div style="font-size: 14px; color: #a0a0a0; margin-bottom: 16px;">
+                        Review your configuration:
+                    </div>
+                    
+                    <div class="summary-item">
+                        <div class="summary-label">Mode:</div>
+                        <div class="summary-value" id="summaryMode">-</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <div class="summary-label">Storage Location:</div>
+                        <div class="summary-value" id="summaryFolder">-</div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;">
+                        <input type="checkbox" id="rememberConfig" checked style="margin: 0;">
+                        <span>Remember this configuration for faster startup</span>
+                    </label>
+                    <div style="font-size: 12px; color: #a0a0a0; margin-top: 4px; margin-left: 20px;">
+                        Skip setup wizard on future launches and use these settings
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 32px;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+                    <div style="font-size: 16px; font-weight: 500; margin-bottom: 8px;">You're all set!</div>
+                    <div style="font-size: 14px; color: #a0a0a0;">
+                        Your floating bullet journal is ready to capture your thoughts.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-btn secondary" id="backBtn" onclick="previousStep()" disabled>Back</button>
+            <div style="flex: 1;"></div>
+            <button class="nav-btn" id="nextBtn" onclick="nextStep()" disabled>Next</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let selectedMode = null;
+        let selectedFolder = null;
+        let setupConfig = {};
+
+        // Initialize setup wizard
+        document.addEventListener('DOMContentLoaded', () => {
+            updateProgress();
+            detectObsidian();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Mode selection
+            document.getElementById('obsidianMode').addEventListener('click', () => selectMode('obsidian'));
+            document.getElementById('markdownMode').addEventListener('click', () => selectMode('markdown'));
+            
+            // Folder browsing
+            document.getElementById('browseBtn').addEventListener('click', browseFolder);
+            document.getElementById('folderPath').addEventListener('input', validateFolder);
+            
+            // Subfolder management (for Obsidian mode)
+            document.getElementById('browseSubfolderBtn').addEventListener('click', browseSubfolder);
+            document.getElementById('subfolderSelect').addEventListener('change', onSubfolderSelect);
+            document.getElementById('createFolderBtn').addEventListener('click', toggleCreateFolder);
+            document.getElementById('newFolderName').addEventListener('keypress', handleNewFolderKeypress);
+        }
+
+        async function detectObsidian() {
+            try {
+                const result = await window.electronAPI.detectObsidian();
+                const statusEl = document.getElementById('obsidianStatus');
+                
+                if (result.found) {
+                    statusEl.textContent = 'Available';
+                    statusEl.className = 'status available';
+                    
+                    // Store detected vault path for later use
+                    setupConfig.detectedVaultPath = result.vaultPath;
+                } else {
+                    statusEl.textContent = 'Not Found';
+                    statusEl.className = 'status not-found';
+                }
+            } catch (error) {
+                console.error('Error detecting Obsidian:', error);
+                const statusEl = document.getElementById('obsidianStatus');
+                statusEl.textContent = 'Error';
+                statusEl.className = 'status not-found';
+            }
+        }
+
+        function selectMode(mode) {
+            selectedMode = mode;
+            setupConfig.mode = mode;
+            
+            // Update UI
+            document.querySelectorAll('.mode-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            document.getElementById(mode + 'Mode').classList.add('selected');
+            
+            // Enable next button immediately
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.disabled = false;
+            nextBtn.textContent = 'Next';
+            
+            // Auto-advance after 1.5 seconds for better UX
+            setTimeout(() => {
+                if (currentStep === 1 && selectedMode === mode) {
+                    // Update button text to show auto-advance
+                    nextBtn.textContent = 'Proceeding...';
+                    nextBtn.style.background = '#10b981';
+                    
+                    setTimeout(() => {
+                        nextStep();
+                    }, 500);
+                }
+            }, 1500);
+        }
+
+        function nextStep() {
+            if (currentStep < 3) {
+                currentStep++;
+                showStep(currentStep);
+                updateProgress();
+                updateNavigation();
+                
+                if (currentStep === 2) {
+                    setupFolderStep();
+                } else if (currentStep === 3) {
+                    setupSummaryStep();
+                }
+            } else {
+                finishSetup();
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+                updateProgress();
+                updateNavigation();
+            }
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.setup-step').forEach(stepEl => {
+                stepEl.classList.remove('active');
+            });
+            
+            document.getElementById('step' + step).classList.add('active');
+            document.getElementById('stepIndicator').textContent = `Step ${step} of 3`;
+        }
+
+        function updateProgress() {
+            const progress = ((currentStep - 1) / 2) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function updateNavigation() {
+            const backBtn = document.getElementById('backBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            backBtn.disabled = currentStep === 1;
+            
+            if (currentStep === 3) {
+                nextBtn.textContent = 'Finish';
+                nextBtn.disabled = false;
+            } else {
+                nextBtn.textContent = 'Next';
+                nextBtn.disabled = !canProceed();
+            }
+        }
+
+        function canProceed() {
+            if (currentStep === 1) {
+                return selectedMode !== null;
+            } else if (currentStep === 2) {
+                return selectedFolder !== null;
+            }
+            return true;
+        }
+
+        function setupFolderStep() {
+            const folderLabel = document.getElementById('folderLabel');
+            const obsidianInfo = document.getElementById('obsidianVaultInfo');
+            
+            if (selectedMode === 'obsidian') {
+                folderLabel.textContent = 'Obsidian Vault:';
+                obsidianInfo.style.display = 'block';
+                
+                // Pre-fill with detected vault if available
+                if (setupConfig.detectedVaultPath) {
+                    document.getElementById('folderPath').value = setupConfig.detectedVaultPath;
+                    selectedFolder = setupConfig.detectedVaultPath;
+                    validateFolder();
+                    // Load vault folders
+                    loadVaultFolders(setupConfig.detectedVaultPath);
+                }
+            } else {
+                folderLabel.textContent = 'Notes Folder:';
+                obsidianInfo.style.display = 'none';
+                
+                // Suggest default folder
+                const defaultPath = window.electronAPI.getDefaultNotesPath();
+                if (defaultPath) {
+                    document.getElementById('folderPath').value = defaultPath;
+                    selectedFolder = defaultPath;
+                    validateFolder();
+                }
+            }
+        }
+
+        async function loadVaultFolders(vaultPath) {
+            if (!vaultPath) return;
+            
+            const select = document.getElementById('subfolderSelect');
+            select.innerHTML = '<option value="">Loading folders...</option>';
+            
+            try {
+                const result = await window.electronAPI.discoverVaultFolders(vaultPath);
+                
+                if (result.success && result.folders) {
+                    select.innerHTML = '';
+                    
+                    result.folders.forEach(folder => {
+                        const option = document.createElement('option');
+                        option.value = folder.path;
+                        option.textContent = folder.name;
+                        if (folder.isRoot) {
+                            option.style.fontWeight = 'bold';
+                        }
+                        select.appendChild(option);
+                    });
+                    
+                    // Select vault root by default
+                    select.value = '';
+                    onSubfolderSelect();
+                } else {
+                    select.innerHTML = '<option value="">Error loading folders</option>';
+                }
+            } catch (error) {
+                console.error('Error loading vault folders:', error);
+                select.innerHTML = '<option value="">Error loading folders</option>';
+            }
+        }
+
+        function onSubfolderSelect() {
+            const select = document.getElementById('subfolderSelect');
+            const selectedPath = select.value;
+            
+            setupConfig.subfolderPath = selectedPath;
+            setupConfig.finalPath = selectedFolder + (selectedPath ? '/' + selectedPath : '');
+            
+            // Enable next button since we have a valid selection
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function toggleCreateFolder() {
+            const input = document.getElementById('newFolderName');
+            const btn = document.getElementById('createFolderBtn');
+            
+            if (input.style.display === 'none') {
+                input.style.display = 'block';
+                input.focus();
+                btn.textContent = 'Cancel';
+            } else {
+                input.style.display = 'none';
+                input.value = '';
+                btn.textContent = '+ New Folder';
+            }
+        }
+
+        async function handleNewFolderKeypress(e) {
+            if (e.key === 'Enter') {
+                await createNewFolder();
+            } else if (e.key === 'Escape') {
+                toggleCreateFolder();
+            }
+        }
+
+        async function createNewFolder() {
+            const input = document.getElementById('newFolderName');
+            const folderName = input.value.trim();
+            
+            if (!folderName) {
+                alert('Please enter a folder name');
+                return;
+            }
+            
+            if (!selectedFolder) {
+                alert('Please select a vault first');
+                return;
+            }
+            
+            try {
+                const result = await window.electronAPI.createVaultFolder(selectedFolder, folderName);
+                
+                if (result.success) {
+                    // Reload folders and select the new one
+                    await loadVaultFolders(selectedFolder);
+                    document.getElementById('subfolderSelect').value = result.folderPath;
+                    onSubfolderSelect();
+                    toggleCreateFolder();
+                } else {
+                    alert('Error creating folder: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error creating folder:', error);
+                alert('Error creating folder: ' + error.message);
+            }
+        }
+
+        async function browseFolder() {
+            try {
+                const result = await window.electronAPI.selectFolder();
+                if (result.path) {
+                    document.getElementById('folderPath').value = result.path;
+                    selectedFolder = result.path;
+                    setupConfig.folderPath = result.path;
+                    validateFolder();
+                }
+            } catch (error) {
+                console.error('Error selecting folder:', error);
+            }
+        }
+
+        async function validateFolder() {
+            const path = document.getElementById('folderPath').value;
+            const validationEl = document.getElementById('folderValidation');
+            
+            if (!path) {
+                validationEl.style.display = 'none';
+                document.getElementById('nextBtn').disabled = true;
+                return;
+            }
+            
+            try {
+                const result = await window.electronAPI.validateFolder(path, selectedMode);
+                
+                if (result.valid) {
+                    validationEl.textContent = result.message || 'Folder is valid and accessible';
+                    validationEl.className = 'validation-message success';
+                    validationEl.style.display = 'block';
+                    selectedFolder = path;
+                    setupConfig.folderPath = path;
+                    
+                    // For Obsidian mode, load folders and validate
+                    if (selectedMode === 'obsidian') {
+                        await loadVaultFolders(path);
+                    } else {
+                        document.getElementById('nextBtn').disabled = false;
+                    }
+                } else {
+                    validationEl.textContent = result.message || 'Invalid folder path';
+                    validationEl.className = 'validation-message error';
+                    validationEl.style.display = 'block';
+                    selectedFolder = null;
+                    document.getElementById('nextBtn').disabled = true;
+                }
+            } catch (error) {
+                validationEl.textContent = 'Error validating folder: ' + error.message;
+                validationEl.className = 'validation-message error';
+                validationEl.style.display = 'block';
+                selectedFolder = null;
+                document.getElementById('nextBtn').disabled = true;
+            }
+        }
+        
+        async function browseSubfolder() {
+            if (!selectedFolder) {
+                alert('Please select an Obsidian vault first');
+                return;
+            }
+            
+            try {
+                const result = await window.electronAPI.selectSubfolder(selectedFolder);
+                if (result.path) {
+                    // Extract the relative path from the vault root
+                    const relativePath = result.path.replace(selectedFolder, '').replace(/^[\\\/]/, '');
+                    
+                    // Update the select dropdown
+                    const select = document.getElementById('subfolderSelect');
+                    select.value = relativePath;
+                    onSubfolderSelect();
+                }
+            } catch (error) {
+                console.error('Error selecting subfolder:', error);
+            }
+        }
+
+        function setupSummaryStep() {
+            document.getElementById('summaryMode').textContent = 
+                selectedMode === 'obsidian' ? 'Obsidian Integration' : 'Markdown Files';
+            
+            let displayPath = setupConfig.finalPath || selectedFolder;
+            
+            // For Obsidian mode with subfolder, show both vault and subfolder
+            if (selectedMode === 'obsidian' && setupConfig.subfolderPath) {
+                displayPath = `${selectedFolder} → ${setupConfig.subfolderPath}`;
+            }
+            
+            document.getElementById('summaryFolder').textContent = displayPath;
+        }
+
+        async function finishSetup() {
+            try {
+                // Add remember configuration option to setup config
+                const rememberConfig = document.getElementById('rememberConfig').checked;
+                setupConfig.rememberConfiguration = rememberConfig;
+                
+                const result = await window.electronAPI.saveSetupConfig(setupConfig);
+                
+                if (result.success) {
+                    // Close setup window and launch main app
+                    await window.electronAPI.completeSetup();
+                } else {
+                    alert('Error saving configuration: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error finishing setup:', error);
+                alert('Error completing setup: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

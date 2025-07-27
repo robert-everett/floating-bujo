@@ -13,15 +13,20 @@ class ComprehensiveFloatingNotes {
         this.configFile = path.join(__dirname, 'config.json');
         this.currentDailyFile = null;
         this.lastFileDate = null;
+        this.lastSavedEntry = null; // Store last saved entry for undo
         
-        // Default configuration
+        // Default configuration (will be DPI-adjusted on first run)
         this.config = {
-            windowPosition: { x: 100, y: 100 },
-            windowSize: { width: 500, height: 150 },
-            defaultSize: { width: 500, height: 150 },
+            windowPosition: { x: null, y: null }, // null = auto-calculate based on screen
+            windowSize: { width: null, height: null }, // null = auto-calculate based on DPI
+            defaultSize: { width: 500, height: 150 }, // Base size for scaling
             alwaysOnTop: true,
             autoFocus: true,
-            activesFolder: this.activesFolder
+            activesFolder: this.activesFolder,
+            mode: 'markdown', // 'obsidian' or 'markdown'
+            obsidianVaultPath: null,
+            setupCompleted: false,
+            dpiScaleFactor: 1.0 // Store detected scale factor
         };
         
         this.loadConfig();
@@ -74,22 +79,48 @@ class ComprehensiveFloatingNotes {
     async createWindow() {
         this.log('Creating main floating window');
         
-        // Get screen dimensions
+        // Get screen dimensions and DPI scaling
         const { screen } = require('electron');
         const primaryDisplay = screen.getPrimaryDisplay();
         const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+        const scaleFactor = primaryDisplay.scaleFactor;
         
-        // Calculate position
-        const x = this.config.windowPosition.x < 0 ? 
-            screenWidth + this.config.windowPosition.x : 
-            this.config.windowPosition.x;
+        this.log(`Screen: ${screenWidth}x${screenHeight}, Scale: ${scaleFactor}`);
+        
+        // Calculate DPI-aware dimensions
+        const baseWidth = 500;
+        const baseHeight = 150;
+        const scaledWidth = Math.round(baseWidth * Math.max(1, scaleFactor * 0.8));
+        const scaledHeight = Math.round(baseHeight * Math.max(1, scaleFactor * 0.8));
+        
+        // Use saved size if available, otherwise use scaled defaults
+        const windowWidth = this.config.windowSize?.width || scaledWidth;
+        const windowHeight = this.config.windowSize?.height || scaledHeight;
+        
+        // Calculate position (ensure window stays on screen)
+        let x = this.config.windowPosition?.x || Math.round(screenWidth * 0.7);
+        let y = this.config.windowPosition?.y || Math.round(screenHeight * 0.1);
+        
+        // Adjust position if window would be off-screen
+        if (x + windowWidth > screenWidth) {
+            x = screenWidth - windowWidth - 20;
+        }
+        if (y + windowHeight > screenHeight) {
+            y = screenHeight - windowHeight - 20;
+        }
+        if (x < 0) x = 20;
+        if (y < 0) y = 20;
 
-        // Create the browser window
+        // Create the browser window with auto-scaling
         this.mainWindow = new BrowserWindow({
-            width: this.config.windowSize.width,
-            height: this.config.windowSize.height,
+            width: windowWidth,
+            height: windowHeight,
+            minWidth: Math.round(400 * Math.max(1, scaleFactor * 0.8)),
+            minHeight: Math.round(120 * Math.max(1, scaleFactor * 0.8)),
+            maxWidth: Math.round(800 * Math.max(1, scaleFactor * 0.8)),
+            maxHeight: Math.round(400 * Math.max(1, scaleFactor * 0.8)),
             x: x,
-            y: this.config.windowPosition.y,
+            y: y,
             alwaysOnTop: this.config.alwaysOnTop,
             skipTaskbar: true,
             frame: false,
@@ -100,9 +131,14 @@ class ComprehensiveFloatingNotes {
             transparent: false,
             backgroundColor: '#1e1e1e',
             webPreferences: {
-                nodeIntegration: true,
-                contextIsolation: false,
-                enableRemoteModule: true
+                nodeIntegration: false,          // ✅ Security: Disable Node.js in renderer
+                contextIsolation: true,          // ✅ Security: Isolate contexts
+                enableRemoteModule: false,       // ✅ Security: Disable deprecated remote module
+                preload: path.join(__dirname, 'preload.js'), // ✅ Security: Secure IPC bridge
+                webSecurity: true,               // ✅ Security: Enable web security (default)
+                allowRunningInsecureContent: false, // ✅ Security: Block insecure content
+                experimentalFeatures: false,     // ✅ Security: Disable experimental features
+                sandbox: false                   // Allow file access for note saving
             }
         });
 
@@ -188,11 +224,23 @@ class ComprehensiveFloatingNotes {
     setupIPC() {
         this.log('Setting up IPC handlers');
         
-        // Handle note saving
+        // Handle note saving with input validation
         ipcMain.handle('save-note', async (event, noteText) => {
             try {
-                await this.saveActiveNote(noteText);
-                this.log(`Note saved: "${noteText}"`);
+                // Security: Validate input
+                if (typeof noteText !== 'string') {
+                    throw new Error('Note text must be a string');
+                }
+                
+                if (noteText.length > 10000) {
+                    throw new Error('Note text too long (max 10,000 characters)');
+                }
+                
+                // Additional sanitization (preload script already handles basic sanitization)
+                const sanitizedNote = noteText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+                
+                await this.saveActiveNote(sanitizedNote);
+                this.log(`Note saved: "${sanitizedNote.substring(0, 100)}${sanitizedNote.length > 100 ? '...' : ''}"`);
                 return { success: true };
             } catch (error) {
                 this.log(`Error saving note: ${error.message}`);
@@ -203,9 +251,14 @@ class ComprehensiveFloatingNotes {
         // Handle undo functionality
         ipcMain.handle('undo-last-note', async (event) => {
             try {
-                // For now, just return success - actual undo logic can be implemented later
-                this.log('Undo requested - feature not fully implemented yet');
-                return { success: true };
+                const result = await this.undoLastEntry();
+                if (result.success) {
+                    this.log('Last entry undone successfully');
+                    return { success: true, restoredText: result.restoredText };
+                } else {
+                    this.log(`Undo failed: ${result.error}`);
+                    return { success: false, error: result.error };
+                }
             } catch (error) {
                 this.log(`Error with undo: ${error.message}`);
                 return { success: false, error: error.message };
@@ -238,6 +291,136 @@ class ComprehensiveFloatingNotes {
             return null;
         });
 
+        // Setup wizard IPC handlers
+        ipcMain.handle('detect-obsidian', async () => {
+            return await this.detectObsidian();
+        });
+
+        ipcMain.handle('validate-folder', async (event, folderPath, mode) => {
+            return await this.validateFolder(folderPath, mode);
+        });
+
+        ipcMain.handle('select-folder', async () => {
+            try {
+                const result = await dialog.showOpenDialog({
+                    properties: ['openDirectory'],
+                    title: 'Select Notes Folder'
+                });
+                
+                if (!result.canceled && result.filePaths.length > 0) {
+                    return { path: result.filePaths[0] };
+                }
+                
+                return { path: null };
+            } catch (error) {
+                this.log(`Error selecting folder: ${error.message}`);
+                return { path: null, error: error.message };
+            }
+        });
+
+        ipcMain.handle('select-subfolder', async (event, vaultPath) => {
+            try {
+                const result = await dialog.showOpenDialog({
+                    properties: ['openDirectory'],
+                    title: 'Select Subfolder within Obsidian Vault',
+                    defaultPath: vaultPath
+                });
+                
+                if (!result.canceled && result.filePaths.length > 0) {
+                    const selectedPath = result.filePaths[0];
+                    
+                    // Ensure the selected path is within the vault
+                    if (selectedPath.startsWith(vaultPath)) {
+                        return { path: selectedPath };
+                    } else {
+                        return { path: null, error: 'Selected folder must be within the Obsidian vault' };
+                    }
+                }
+                
+                return { path: null };
+            } catch (error) {
+                this.log(`Error selecting subfolder: ${error.message}`);
+                return { path: null, error: error.message };
+            }
+        });
+
+        ipcMain.handle('discover-vault-folders', async (event, vaultPath) => {
+            try {
+                const folders = await this.discoverVaultFolders(vaultPath);
+                return { success: true, folders };
+            } catch (error) {
+                this.log(`Error discovering vault folders: ${error.message}`);
+                return { success: false, error: error.message, folders: [] };
+            }
+        });
+
+        ipcMain.handle('create-vault-folder', async (event, vaultPath, folderName) => {
+            try {
+                const result = await this.createVaultFolder(vaultPath, folderName);
+                return result;
+            } catch (error) {
+                this.log(`Error creating vault folder: ${error.message}`);
+                return { success: false, error: error.message };
+            }
+        });
+
+        ipcMain.handle('get-default-notes-path', () => {
+            return this.getDefaultNotesPath();
+        });
+
+        ipcMain.handle('save-setup-config', async (event, setupConfig) => {
+            try {
+                // Update configuration with setup data
+                this.config.mode = setupConfig.mode;
+                this.config.setupCompleted = true;
+                this.config.rememberConfiguration = setupConfig.rememberConfiguration !== false; // Default to true
+                
+                if (setupConfig.mode === 'obsidian') {
+                    this.config.obsidianVaultPath = setupConfig.folderPath;
+                    this.config.obsidianSubfolder = setupConfig.subfolderPath || '';
+                    
+                    // Use the final path (vault + subfolder) or just vault if no subfolder
+                    this.activesFolder = setupConfig.finalPath || setupConfig.folderPath;
+                } else {
+                    this.activesFolder = setupConfig.folderPath;
+                }
+                
+                this.config.activesFolder = this.activesFolder;
+                
+                // Save configuration
+                await this.saveConfig();
+                
+                const folderInfo = setupConfig.mode === 'obsidian' && setupConfig.subfolderPath 
+                    ? `${setupConfig.folderPath}/${setupConfig.subfolderPath}`
+                    : setupConfig.folderPath;
+                
+                this.log(`Setup completed - Mode: ${setupConfig.mode}, Folder: ${folderInfo}, Remember: ${setupConfig.rememberConfiguration}`);
+                
+                return { success: true };
+            } catch (error) {
+                this.log(`Error saving setup config: ${error.message}`);
+                return { success: false, error: error.message };
+            }
+        });
+
+        ipcMain.handle('complete-setup', async () => {
+            try {
+                // Close setup window and create main window
+                const setupWindow = BrowserWindow.getFocusedWindow();
+                if (setupWindow) {
+                    setupWindow.close();
+                }
+                
+                // Create main application window
+                await this.createWindow();
+                
+                return { success: true };
+            } catch (error) {
+                this.log(`Error completing setup: ${error.message}`);
+                return { success: false, error: error.message };
+            }
+        });
+
         this.log('IPC handlers set up successfully');
     }
 
@@ -253,13 +436,18 @@ class ComprehensiveFloatingNotes {
 
     getDailyFileName() {
         const now = new Date();
-        const timestamp = now.toISOString().slice(0, 10).replace(/-/g, '');
+        // Use local time instead of UTC to prevent timezone issues
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const timestamp = `${year}${month}${day}`;
         return `actives-${timestamp}.md`;
     }
 
     async createOrGetDailyFile() {
         const now = new Date();
-        const today = now.toDateString();
+        // Use consistent local date string for comparison
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         
         // Check if we need a new daily file
         if (this.lastFileDate !== today) {
@@ -271,8 +459,14 @@ class ComprehensiveFloatingNotes {
                 await fs.access(filePath);
                 this.log(`Using existing daily file: ${filename}`);
             } catch {
-                // Create new file
-                await fs.writeFile(filePath, `# Active Notes - ${now.toDateString()}\n\n`);
+                // Create new file with consistent local date
+                const dateStr = now.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                await fs.writeFile(filePath, `# Active Notes - ${dateStr}\n\n`);
                 this.log(`Created new daily file: ${filename}`);
             }
             
@@ -291,7 +485,92 @@ class ComprehensiveFloatingNotes {
         const timeStr = now.toTimeString().slice(0, 8);
         const noteEntry = `${timeStr} #active ${noteText}\n`;
         
+        // Store the entry details for potential undo
+        this.lastSavedEntry = {
+            text: noteText,
+            entry: noteEntry.trim(), // Store without trailing newline for comparison
+            filePath: filePath,
+            timestamp: now.getTime()
+        };
+        
+        this.log(`Save debug - Stored entry for undo: "${noteEntry.trim()}"`);
+        
         await fs.appendFile(filePath, noteEntry, 'utf8');
+    }
+
+    async undoLastEntry() {
+        try {
+            if (!this.lastSavedEntry) {
+                return { success: false, error: 'No entry to undo' };
+            }
+
+            const { entry, filePath, text, timestamp } = this.lastSavedEntry;
+            
+            // Check if undo is still allowed (within reasonable time frame - 5 minutes)
+            const now = new Date().getTime();
+            const timeDiff = now - timestamp;
+            if (timeDiff > 5 * 60 * 1000) { // 5 minutes
+                this.lastSavedEntry = null;
+                return { success: false, error: 'Undo window expired (5 minutes)' };
+            }
+
+            // Read the current file content
+            let fileContent;
+            try {
+                fileContent = await fs.readFile(filePath, 'utf8');
+            } catch (error) {
+                return { success: false, error: 'Could not read file for undo' };
+            }
+
+            // Check if the last line matches our saved entry
+            const lines = fileContent.split('\n');
+            const lastNonEmptyLine = lines.filter(line => line.trim()).pop();
+            
+            this.log(`Undo debug - Looking for: "${entry.trim()}"`);
+            this.log(`Undo debug - Found last line: "${lastNonEmptyLine}"`);
+            
+            if (lastNonEmptyLine !== entry.trim()) {
+                return { success: false, error: 'File has been modified since last entry' };
+            }
+
+            // Find and remove the exact matching line
+            let foundIndex = -1;
+            for (let i = lines.length - 1; i >= 0; i--) {
+                if (lines[i].trim() === entry.trim()) {
+                    foundIndex = i;
+                    break;
+                }
+            }
+            
+            if (foundIndex === -1) {
+                return { success: false, error: 'Could not find entry to remove' };
+            }
+            
+            // Remove the line at foundIndex
+            const newLines = [...lines];
+            newLines.splice(foundIndex, 1);
+            
+            // Clean up trailing empty lines, but keep the file structure
+            while (newLines.length > 0 && newLines[newLines.length - 1] === '') {
+                newLines.pop();
+            }
+            
+            const newContent = newLines.join('\n') + (newLines.length > 0 ? '\n' : '');
+            
+            this.log(`Undo debug - Removed line at index ${foundIndex}, new content length: ${newContent.length}`);
+            
+            // Write back the modified content
+            await fs.writeFile(filePath, newContent, 'utf8');
+            
+            // Clear the last saved entry since it's been undone
+            const restoredText = text;
+            this.lastSavedEntry = null;
+            
+            return { success: true, restoredText };
+            
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
     }
 
     resetWindowSize() {
@@ -321,6 +600,18 @@ class ComprehensiveFloatingNotes {
         
         await app.whenReady();
         
+        // Setup IPC handlers first (needed for setup wizard)
+        this.setupIPC();
+        
+        // Check if setup has been completed
+        if (!this.config.setupCompleted || !this.config.rememberConfiguration) {
+            this.log(this.config.setupCompleted ? 
+                'Configuration memory disabled - showing setup wizard' : 
+                'Setup not completed - showing setup wizard');
+            await this.createSetupWindow();
+            return; // Don't proceed with main app initialization
+        }
+        
         // Create system tray
         this.createTray();
         
@@ -330,9 +621,6 @@ class ComprehensiveFloatingNotes {
         // Setup global shortcuts
         this.setupGlobalShortcuts();
         
-        // Setup IPC handlers
-        this.setupIPC();
-        
         // Ensure actives folder exists
         await this.ensureActivesFolder();
         
@@ -340,6 +628,288 @@ class ComprehensiveFloatingNotes {
         await this.createOrGetDailyFile();
         
         this.log('Application initialized successfully');
+    }
+
+    // Obsidian detection methods
+    async detectObsidian() {
+        this.log('Detecting Obsidian installation');
+        
+        try {
+            const os = require('os');
+            const platform = os.platform();
+            let possiblePaths = [];
+            
+            if (platform === 'win32') {
+                const userProfile = os.homedir();
+                possiblePaths = [
+                    path.join(userProfile, 'AppData', 'Local', 'Obsidian', 'Obsidian.exe'),
+                    path.join(userProfile, 'AppData', 'Local', 'Programs', 'Obsidian', 'Obsidian.exe'),
+                    'C:\\Program Files\\Obsidian\\Obsidian.exe',
+                    'C:\\Program Files (x86)\\Obsidian\\Obsidian.exe'
+                ];
+            }
+            
+            // Check if Obsidian executable exists
+            for (const obsidianPath of possiblePaths) {
+                if (fsSync.existsSync(obsidianPath)) {
+                    this.log(`Obsidian found at: ${obsidianPath}`);
+                    
+                    // Try to find vault path
+                    const vaultPath = await this.findObsidianVault();
+                    
+                    return {
+                        found: true,
+                        executablePath: obsidianPath,
+                        vaultPath: vaultPath
+                    };
+                }
+            }
+            
+            this.log('Obsidian not found in standard locations');
+            return { found: false };
+            
+        } catch (error) {
+            this.log(`Error detecting Obsidian: ${error.message}`);
+            return { found: false, error: error.message };
+        }
+    }
+    
+    async findObsidianVault() {
+        try {
+            const os = require('os');
+            const userHome = os.homedir();
+            
+            // Common vault locations
+            const possibleVaultLocations = [
+                path.join(userHome, 'Documents', 'Obsidian'),
+                path.join(userHome, 'Documents'),
+                path.join(userHome, 'OneDrive', 'Documents'),
+                path.join(userHome, 'Dropbox'),
+                path.join(userHome, 'iCloudDrive'),
+                userHome
+            ];
+            
+            for (const location of possibleVaultLocations) {
+                if (fsSync.existsSync(location)) {
+                    const subdirs = await fs.readdir(location, { withFileTypes: true });
+                    
+                    for (const dirent of subdirs) {
+                        if (dirent.isDirectory()) {
+                            const vaultPath = path.join(location, dirent.name);
+                            const obsidianConfigPath = path.join(vaultPath, '.obsidian');
+                            
+                            if (fsSync.existsSync(obsidianConfigPath)) {
+                                this.log(`Found Obsidian vault at: ${vaultPath}`);
+                                return vaultPath;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return null;
+            
+        } catch (error) {
+            this.log(`Error finding Obsidian vault: ${error.message}`);
+            return null;
+        }
+    }
+    
+    async validateFolder(folderPath, mode) {
+        try {
+            // Check if folder exists and is accessible
+            await fs.access(folderPath);
+            
+            if (mode === 'obsidian') {
+                // Check if it's a valid Obsidian vault
+                const obsidianConfigPath = path.join(folderPath, '.obsidian');
+                if (fsSync.existsSync(obsidianConfigPath)) {
+                    return {
+                        valid: true,
+                        message: 'Valid Obsidian vault detected'
+                    };
+                } else {
+                    return {
+                        valid: false,
+                        message: 'This folder is not an Obsidian vault (missing .obsidian folder)'
+                    };
+                }
+            } else {
+                // For markdown mode, just check if it's writable
+                const testFile = path.join(folderPath, '.test-write');
+                try {
+                    await fs.writeFile(testFile, 'test');
+                    await fs.unlink(testFile);
+                    return {
+                        valid: true,
+                        message: 'Folder is writable and accessible'
+                    };
+                } catch (writeError) {
+                    return {
+                        valid: false,
+                        message: 'Folder is not writable'
+                    };
+                }
+            }
+            
+        } catch (error) {
+            return {
+                valid: false,
+                message: `Cannot access folder: ${error.message}`
+            };
+        }
+    }
+    
+    getDefaultNotesPath() {
+        const os = require('os');
+        const userHome = os.homedir();
+        return path.join(userHome, 'Documents', 'FloatingBujo');
+    }
+
+    async discoverVaultFolders(vaultPath) {
+        try {
+            const folders = [];
+            
+            // Add vault root option
+            folders.push({
+                name: '/ (Vault Root)',
+                path: '',
+                fullPath: vaultPath,
+                isRoot: true
+            });
+            
+            // Recursively discover folders
+            await this.scanFoldersRecursive(vaultPath, vaultPath, '', folders, 0, 3); // Max depth of 3
+            
+            return folders;
+        } catch (error) {
+            this.log(`Error in discoverVaultFolders: ${error.message}`);
+            return [];
+        }
+    }
+
+    async scanFoldersRecursive(basePath, currentPath, relativePath, folders, depth, maxDepth) {
+        if (depth >= maxDepth) return;
+        
+        try {
+            const items = await fs.readdir(currentPath, { withFileTypes: true });
+            
+            for (const item of items) {
+                if (item.isDirectory()) {
+                    // Skip hidden folders and Obsidian system folders
+                    if (item.name.startsWith('.') || item.name.startsWith('_')) {
+                        continue;
+                    }
+                    
+                    const itemPath = path.join(currentPath, item.name);
+                    const relativeItemPath = relativePath ? path.join(relativePath, item.name) : item.name;
+                    
+                    // Add folder to list
+                    folders.push({
+                        name: '  '.repeat(depth) + item.name,
+                        path: relativeItemPath.replace(/\\/g, '/'), // Normalize path separators
+                        fullPath: itemPath,
+                        isRoot: false,
+                        depth: depth
+                    });
+                    
+                    // Recursively scan subfolders
+                    await this.scanFoldersRecursive(basePath, itemPath, relativeItemPath, folders, depth + 1, maxDepth);
+                }
+            }
+        } catch (error) {
+            // Continue scanning even if one folder fails
+            this.log(`Error scanning folder ${currentPath}: ${error.message}`);
+        }
+    }
+
+    async createVaultFolder(vaultPath, folderName) {
+        try {
+            // Validate folder name
+            if (!folderName || folderName.trim() === '') {
+                return { success: false, error: 'Folder name cannot be empty' };
+            }
+            
+            // Sanitize folder name
+            const sanitizedName = folderName.trim().replace(/[<>:"/\\|?*]/g, '');
+            if (sanitizedName !== folderName.trim()) {
+                return { success: false, error: 'Folder name contains invalid characters' };
+            }
+            
+            const folderPath = path.join(vaultPath, sanitizedName);
+            
+            // Check if folder already exists
+            try {
+                await fs.access(folderPath);
+                return { success: false, error: 'Folder already exists' };
+            } catch {
+                // Folder doesn't exist, which is what we want
+            }
+            
+            // Create the folder
+            await fs.mkdir(folderPath, { recursive: true });
+            
+            this.log(`Created new vault folder: ${sanitizedName}`);
+            
+            return { 
+                success: true, 
+                folderName: sanitizedName,
+                folderPath: sanitizedName.replace(/\\/g, '/') // Normalize for UI
+            };
+            
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+    
+    async createSetupWindow() {
+        this.log('Creating setup wizard window');
+        
+        // Get screen dimensions and DPI scaling for setup wizard
+        const { screen } = require('electron');
+        const primaryDisplay = screen.getPrimaryDisplay();
+        const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+        const scaleFactor = primaryDisplay.scaleFactor;
+        
+        // Calculate DPI-aware setup window dimensions
+        const baseWidth = 600;
+        const baseHeight = 500;
+        const setupWidth = Math.round(baseWidth * Math.max(1, scaleFactor * 0.9));
+        const setupHeight = Math.round(baseHeight * Math.max(1, scaleFactor * 0.9));
+        
+        // Ensure window fits on screen
+        const maxWidth = Math.min(setupWidth, screenWidth - 100);
+        const maxHeight = Math.min(setupHeight, screenHeight - 100);
+        
+        this.log(`Setup window: ${maxWidth}x${maxHeight} (scale: ${scaleFactor})`);
+        
+        const setupWindow = new BrowserWindow({
+            width: maxWidth,
+            height: maxHeight,
+            minWidth: Math.round(500 * Math.max(1, scaleFactor * 0.8)),
+            minHeight: Math.round(400 * Math.max(1, scaleFactor * 0.8)),
+            center: true,
+            resizable: true,
+            minimizable: false,
+            maximizable: false,
+            autoHideMenuBar: true,
+            webPreferences: {
+                nodeIntegration: false,
+                contextIsolation: true,
+                preload: path.join(__dirname, 'preload.js')
+            }
+        });
+        
+        await setupWindow.loadFile(path.join(__dirname, 'setup-wizard.html'));
+        
+        setupWindow.on('closed', () => {
+            // If setup is cancelled, quit the application
+            if (!this.config.setupCompleted) {
+                app.quit();
+            }
+        });
+        
+        return setupWindow;
     }
 
     cleanup() {
