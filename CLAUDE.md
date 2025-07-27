@@ -1,61 +1,108 @@
 # CLAUDE.md
-
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
+This is a project for creating a priority floating window for bujo (bullet journal) note taking. 
 
-This is an early-stage Obsidian plugin project for creating a priority floating bullet window for note taking. The repository currently contains only basic project setup files.
+## Claude Code Documentation Guidelines for Floating Bujo
+1. Documentation Style  
+   - Write as if you’re explaining to a peer engineer—no marketing or customer‑facing tone.
+   - Use plain, direct language; avoid corporate jargon or dramatic phrasing.  
+   - Only use headers or other formatting when it makes a section clearer; otherwise, keep it minimal.  
+   - Skip any introductory fluff—get straight to the technical decisions and implementation details.  
 
-## Current State
+2. Code Comments  
+   - Always explain *why* a piece of code exists or why a decision was made; don’t waste space stating the obvious “what.”  
+   - Keep each comment concise, compact, and use practical—1–2 sentences max.  
+   - Never include ASCII art, emojis, or decorative formatting in comments.  
+   - Document any non‑obvious business logic, performance trade‑offs, security considerations, or other critical decisions.  
 
-The repository is in initial setup phase with:
-- Basic README describing the plugin concept
-- MIT License
-- No source code, build configuration, or package files yet
+3. Examples of Tone & Style  
+   - Avoid: “🚀 Revolutionary Implementation Strategy for Cutting‑Edge Security! 💪”  
+     Use: “Security fixes: enable context isolation, disable node integration”  
+   - Avoid: “This comprehensive, enterprise‑grade security implementation…”  
+     Use: “Add input validation to prevent code injection”  
 
-## Development Setup
+Whenever you generate documentation or comments, default to the above guidelines without exception. 
 
-This project will need standard Obsidian plugin development setup:
-- TypeScript for plugin development
-- Node.js package management
-- Obsidian plugin build toolchain
-- manifest.json for plugin metadata
+## Claude Code Requirements Engineering Guidelines for Floating Bujo
+You are an AI coding assistant responsible for authoring and organizing functional requirements using a modern requirements‑engineering framework. Follow these rules without exception:
 
-## Next Steps for Development
+1. Structure per IEEE 29148 / Agile Feature Model  
+   - Epic/Feature Context (optional):  
+     - ID: FEAT-<three‑digit>, Title & Brief Goal  
+   - Functional Requirement:  
+     - ID: FR‑<three‑digit> Summary  
+     - Purpose: One sentence aligning to the feature goal  
 
-Future development will require:
-1. Setting up TypeScript/Node.js build environment
-2. Creating main plugin entry point
-3. Implementing floating window UI components
-4. Adding bullet journal functionality
-5. Plugin manifest and build configuration
+2. Scoped Sub‑sections  
+   Under each FR, include at least the **Functionality** header; you may also include **Security**, **Design Constraints**, and **Rationale** as needed:
 
-## Architecture Notes
+   Functionality:  
+   • Use **must** for mandatory behavior, **should** for recommended  
+   • Example: Functionality: Undo **should** remove the last text entry  
 
-As an Obsidian plugin, this will follow the standard plugin architecture:
-- Main plugin class extending Obsidian's Plugin class
-- UI components for floating windows
-- Integration with Obsidian's workspace and note management APIs
-- Settings and configuration management
+   Security (optional):  
+   • Use **must** / **must not** for absolute controls  
+   • Example: Security: Undo operation **must not** expose deleted data  
 
-# Claude Code Guidelines for Floating Bujo
+   Design Constraints (optional):  
+   • Use **shall** for architectural, performance, or implementation mandates  
+   • Example: Design Constraints: Undo **shall** clear the buffer before persisting  
 
-## Documentation Style
-- Write like you're explaining to a colleague, not marketing to customers
-- Use plain, direct language - no corporate-speak or dramatic phrases
-- Minimal formatting - only use headers/formatting when it adds clarity
-- Get straight to the point - skip introductory fluff
-- Focus on technical decisions and practical implementation
+   Rationale (optional):  
+   • Provide context or justification for why this FR exists  
+   • Example: Rationale: Undo supports quick recovery from typing errors and improves user confidence  
 
-## Code Comments
-- Explain why, not what (code shows what)
-- Keep comments short and practical
-- No ASCII art or decorative formatting
-- Document non-obvious business logic and decisions
+3. Acceptance Criteria (must be testable)  
+   • Each FR **must** include measurable criteria that can be verified  
+   • List bullet scenarios in given‑when‑then format  
 
-## Examples
-❌ Avoid: "🚀 Revolutionary Implementation Strategy for Cutting-Edge Security! 💪"
-✅ Use: "Security fixes: enable context isolation, disable node integration"
+   Measurability and Verification (not all may be required):  
+   • Unit tests covering each scenario
+   • Regression test suites to prevent future breakage
+   • Manual/user‑acceptance testing for UX validation
+   • Code inspections or peer reviews for adherence to standards
+   • Integration tests to verify end‑to‑end behavior
+   • Consider required test coverage thresholds and specify coverage targets
+   • Specify how each criterion will be checked (automated or manual)
 
-❌ Avoid: "This comprehensive, enterprise-grade security implementation..."
-✅ Use: "Add input validation to prevent code injection"
+4. Modality & Language  
+   • Apply RFC 2119 keywords: **must**, **must not**, **should**, **may**  
+   • Use present tense, active voice; one modal verb per statement  
+   • Define keyword meanings once in the document header if undefined  
+
+5. Clarity & Brevity  
+   • Write one sentence per bullet  
+   • Use Rationale for explanatory detail
+   • Never utilize decorative formatting or emojis  
+   • Use precise nouns; avoid vague terms like “thing” or “process”  
+
+---
+
+Example:
+
+FEAT-010 Floating‑Window Management  
+Purpose: Allow users to resize and reposition notes in a persistent floating window
+
+FR‑001 Provide Text‑Entry Undo Capability  
+Purpose: Allow users to revert accidental text edits for safety and audit  
+
+Functionality:  
+• Undo **should** remove the most recent text entry from the user’s file  
+
+Security:  
+• Undo operation **must not** expose deleted data to other processes  
+
+Design Constraints:  
+• Undo **shall** clear the text from the in‑memory buffer before updating disk  
+
+Rationale:  
+• Undo enables users to correct mistakes without manually reverting changes  
+
+Acceptance Criteria (Tests):
+• Given a text buffer with two entries, When the user triggers undo once, Then only the second entry is removed  
+• Given no entries in buffer, When undo is invoked, Then no change occurs and a log entry is created  
+
+Measurability and Verification:  
+•  100% coverage of Acceptance Criteria 
