@@ -37,3 +37,25 @@ As an Obsidian plugin, this will follow the standard plugin architecture:
 - UI components for floating windows
 - Integration with Obsidian's workspace and note management APIs
 - Settings and configuration management
+
+# Claude Code Guidelines for Floating Bujo
+
+## Documentation Style
+- Write like you're explaining to a colleague, not marketing to customers
+- Use plain, direct language - no corporate-speak or dramatic phrases
+- Minimal formatting - only use headers/formatting when it adds clarity
+- Get straight to the point - skip introductory fluff
+- Focus on technical decisions and practical implementation
+
+## Code Comments
+- Explain why, not what (code shows what)
+- Keep comments short and practical
+- No ASCII art or decorative formatting
+- Document non-obvious business logic and decisions
+
+## Examples
+❌ Avoid: "🚀 Revolutionary Implementation Strategy for Cutting-Edge Security! 💪"
+✅ Use: "Security fixes: enable context isolation, disable node integration"
+
+❌ Avoid: "This comprehensive, enterprise-grade security implementation..."
+✅ Use: "Add input validation to prevent code injection"
