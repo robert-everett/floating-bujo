@@ -8,7 +8,7 @@ class ComprehensiveFloatingNotes {
     constructor() {
         this.mainWindow = null;
         this.tray = null;
-        this.activesFolder = 'some/path/to/some/folder'
+        this.activesFolder = path.join(__dirname, 'test-notes')
         this.logFile = path.join(__dirname, 'floating-notes.log');
         this.configFile = path.join(__dirname, 'config.json');
         this.currentDailyFile = null;
@@ -16,9 +16,9 @@ class ComprehensiveFloatingNotes {
         
         // Default configuration
         this.config = {
-            windowPosition: { x: -420, y: 20 },
-            windowSize: { width: 400, height: 100 },
-            defaultSize: { width: 400, height: 100 },
+            windowPosition: { x: 100, y: 100 },
+            windowSize: { width: 500, height: 150 },
+            defaultSize: { width: 500, height: 150 },
             alwaysOnTop: true,
             autoFocus: true,
             activesFolder: this.activesFolder
@@ -107,16 +107,25 @@ class ComprehensiveFloatingNotes {
         });
 
         // Load the HTML file
-        await this.mainWindow.loadFile('floating-notes.html');
+        await this.mainWindow.loadFile(path.join(__dirname, 'floating-notes.html'));
 
-        // Show window when ready
+        // Show window immediately and force it to be visible
         this.mainWindow.once('ready-to-show', () => {
             this.mainWindow.show();
-            if (this.config.autoFocus) {
-                this.mainWindow.focus();
-            }
-            this.log('Main window displayed');
+            this.mainWindow.focus();
+            this.mainWindow.moveTop(); // Force to top
+            this.mainWindow.setAlwaysOnTop(true, 'screen-saver'); // Highest level
+            
+            const [x, y] = this.mainWindow.getPosition();
+            const [width, height] = this.mainWindow.getSize();
+            this.log(`Main window displayed at position: ${x},${y} size: ${width}x${height}`);
+            this.log(`Window visible: ${this.mainWindow.isVisible()}`);
+            this.log(`Window focused: ${this.mainWindow.isFocused()}`);
         });
+        
+        // Force show immediately without waiting
+        this.mainWindow.show();
+        this.mainWindow.focus();
 
         // Prevent window from being closed completely
         this.mainWindow.on('close', (event) => {
@@ -145,64 +154,8 @@ class ComprehensiveFloatingNotes {
     }
 
     createTray() {
-        this.log('Creating system tray');
-        
-        // Create a simple tray icon (you'll need an icon file)
-        // For now, we'll skip the icon and just create the menu
-        // this.tray = new Tray('path/to/icon.png');
-        
-        const contextMenu = Menu.buildFromTemplate([
-            {
-                label: 'Show Floating Notes',
-                click: () => {
-                    if (this.mainWindow) {
-                        this.mainWindow.show();
-                        this.mainWindow.focus();
-                    }
-                }
-            },
-            {
-                label: 'Hide Floating Notes',
-                click: () => {
-                    if (this.mainWindow) {
-                        this.mainWindow.hide();
-                    }
-                }
-            },
-            { type: 'separator' },
-            {
-                label: 'Open Actives Folder',
-                click: () => {
-                    require('electron').shell.openPath(this.activesFolder);
-                }
-            },
-            {
-                label: 'View Logs',
-                click: () => {
-                    require('electron').shell.openPath(this.logFile);
-                }
-            },
-            { type: 'separator' },
-            {
-                label: 'Reset Window Size',
-                click: () => {
-                    this.resetWindowSize();
-                }
-            },
-            { type: 'separator' },
-            {
-                label: 'Quit Application',
-                click: () => {
-                    this.quitApplication();
-                }
-            }
-        ]);
-
-        // If you have a tray icon, uncomment this:
-        // this.tray.setContextMenu(contextMenu);
-        // this.tray.setToolTip('Floating Active Notes');
-        
-        this.log('System tray created (menu only, no icon)');
+        this.log('System tray disabled - using keyboard shortcuts only');
+        this.log('Use Ctrl+Shift+N (Show) / Ctrl+Shift+H (Hide) for window control');
     }
 
     setupGlobalShortcuts() {
@@ -243,6 +196,18 @@ class ComprehensiveFloatingNotes {
                 return { success: true };
             } catch (error) {
                 this.log(`Error saving note: ${error.message}`);
+                return { success: false, error: error.message };
+            }
+        });
+
+        // Handle undo functionality
+        ipcMain.handle('undo-last-note', async (event) => {
+            try {
+                // For now, just return success - actual undo logic can be implemented later
+                this.log('Undo requested - feature not fully implemented yet');
+                return { success: true };
+            } catch (error) {
+                this.log(`Error with undo: ${error.message}`);
                 return { success: false, error: error.message };
             }
         });
@@ -386,6 +351,9 @@ class ComprehensiveFloatingNotes {
         }
     }
 }
+
+// Disable GPU acceleration for lightweight operation (must be before app.whenReady)
+app.disableHardwareAcceleration();
 
 // Create application instance
 const floatingApp = new ComprehensiveFloatingNotes();

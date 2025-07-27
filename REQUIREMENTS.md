@@ -8,13 +8,14 @@
 **Framework:** Electron + Node.js  
 **License:** MIT  
 
-**Description:** A system-wide floating window application that enables seamless bullet journal note capture without interrupting workflow. Supports both Obsidian users and general markdown enthusiasts through intelligent mode detection and streamlined setup.
+**Description:** A standalone system-wide Electron application that enables seamless bullet journal note capture without interrupting workflow. Supports both Obsidian users through external integration and general markdown enthusiasts through simple file management. This is **not an Obsidian plugin** but rather an independent desktop application that works alongside Obsidian.
 
 ## Core Value Proposition
 
+- **Standalone desktop application** - Independent Electron app, not an Obsidian plugin
 - **Zero-friction bullet journaling** - Always accessible, minimal interface
 - **System-wide availability** - Works over any application (browsers, games, IDEs)
-- **Dual-mode support** - Native Obsidian integration OR general markdown workflow
+- **Dual-mode support** - External Obsidian integration OR general markdown workflow
 - **Persistent operation** - Runs as Windows service, survives restarts
 - **Principled simplicity** - Capture thoughts instantly without configuration complexity
 
@@ -367,7 +368,49 @@ Renderer Process
 **I want** to note strategies or observations without alt-tabbing  
 **So that** I can improve my gameplay while staying immersed
 
+## Corrected MVP Implementation Phases
+
+### Phase 1: Core System-Wide Functionality (Critical MVP)
+**Always-floating is THE core feature - without it, this is just another note app**
+- **FR-002: System-Wide Floating Window** (CRITICAL - Primary value proposition)
+- **FR-003: Bujo Input Interface** (Text input and basic formatting)
+- **FR-007: Entry Formatting** (Timestamp and hashtag formatting)
+- **FR-005 OR FR-006: File Management** (Start with one mode - Obsidian OR Markdown)
+
+### Phase 2: Enhanced User Experience
+- **FR-001: Dual-Mode Setup** (Setup wizard and mode detection)
+- **FR-004: Advanced Window Management** (Resize, positioning, persistence)
+- **FR-010: Entry Undo Functionality** (10-second undo window)
+- **FR-014: Global Hotkey Management** (System-wide keyboard shortcuts)
+
+### Phase 3: Service Integration and Advanced Features
+- **FR-008: Windows Service Integration** (Auto-start, background operation)
+- **FR-011: Obsidian Integration** (URI scheme, external app launching)
+- **FR-012: Logging and Monitoring** (Comprehensive error tracking)
+- **FR-013: Security and Permissions** (Enhanced security measures)
+- **FR-015: Professional Installation** (MSI installer, service setup)
+
 ## Success Metrics
+
+### Phase 1: Core System-Wide Functionality (Critical MVP)
+**Always-floating is THE core feature - without it, this is just another note app**
+- **FR-002: System-Wide Floating Window** (CRITICAL - Primary value proposition)
+- **FR-003: Bujo Input Interface** (Text input and basic formatting)
+- **FR-007: Entry Formatting** (Timestamp and hashtag formatting)
+- **FR-005 OR FR-006: File Management** (Start with one mode - Obsidian OR Markdown)
+
+### Phase 2: Enhanced User Experience
+- **FR-001: Dual-Mode Setup** (Setup wizard and mode detection)
+- **FR-004: Advanced Window Management** (Resize, positioning, persistence)
+- **FR-010: Entry Undo Functionality** (10-second undo window)
+- **FR-014: Global Hotkey Management** (System-wide keyboard shortcuts)
+
+### Phase 3: Service Integration and Advanced Features
+- **FR-008: Windows Service Integration** (Auto-start, background operation)
+- **FR-011: Obsidian Integration** (URI scheme, external app launching)
+- **FR-012: Logging and Monitoring** (Comprehensive error tracking)
+- **FR-013: Security and Permissions** (Enhanced security measures)
+- **FR-015: Professional Installation** (MSI installer, service setup)
 
 ### Adoption Metrics
 - **Download Rate:** Target 100 downloads in first month
@@ -402,9 +445,11 @@ Renderer Process
 
 ### Technical Constraints
 - Windows-only for initial release
+- **Standalone Electron application** (not an Obsidian plugin)
 - Requires administrator privileges for service installation
 - Obsidian mode requires Obsidian installation (validated during setup)
 - Markdown mode works with any folder structure
+- External integration with Obsidian via URI scheme and file system
 
 ### Business Constraints
 - Open source development model
