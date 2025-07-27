@@ -4,6 +4,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 This is a project for creating a priority floating window for bujo (bullet journal) note taking. 
 
+## Claude Code Response Token Efficiency Plan
+1. Avoid Output Duplication
+   - Do not show both full file content and diff for the same change
+   - Avoid providing redundant information
+   - Use brief confirmation instead of verbose change descriptions
+
+2. Minimize Response Length
+   - Provide only what was requested; utilize less unsolicited explanations
+   - Use single or abbreviated sentences for simple confirmations
+   - Reference files by name rather than reproducing their content
+   - Skip obvious implementation details unless specifically asked
+
+3. Streamline Communication
+   - Use technical shorthand when appropriate
+   - Assume engineering competence; avoid basic explanations
+   - Combine related points into single statements
+   - Use bullet dashes or points over numbered lists when order doesn't matter
+
+4. Check Context Before Responding
+   - Review what's already visible before generating output
+   - Reference existing information instead of recreating it
+   - Focus tokens on understanding information and problem-solving
+   - Collaborate with your team, ask questions when thought chains are nuanced 
+   - Keep responses proportional to the complexity of the request
+
 ## Claude Code Documentation Guidelines for Floating Bujo
 1. Documentation Style  
    - Write as if you’re explaining to a peer engineer—no marketing or customer‑facing tone.
