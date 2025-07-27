@@ -15,12 +15,16 @@ This is a project for creating a priority floating window for bujo (bullet journ
    - Use single or abbreviated sentences for simple confirmations
    - Reference files by name rather than reproducing their content
    - Skip obvious implementation details unless specifically asked
+   - Utilize compact responses for routine actions
+      - eg. git actions (push, pull, commit, log, branch)
+      - eg. project file reviews actions (diffs, memory updates, reads, writes)
 
 3. Streamline Communication
    - Use technical shorthand when appropriate
    - Assume engineering competence; avoid basic explanations
    - Combine related points into single statements
    - Use bullet dashes or points over numbered lists when order doesn't matter
+
 
 4. Check Context Before Responding
    - Review what's already visible before generating output
