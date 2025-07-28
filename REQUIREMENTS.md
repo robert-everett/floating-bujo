@@ -171,6 +171,30 @@
   - ✅ Debug information for troubleshooting
   - ✅ Setup wizard and configuration change logging
   - ✅ Undo operation logging with detailed debug information
+
+### FR-014: Desktop Application Distribution 🔄 IN PROGRESS
+- **Description:** Provide standalone executable with proper system integration
+- **Implementation Status:** IN PROGRESS - Config persistence fixed, packaging pending
+- **Acceptance Criteria:**
+  - ✅ Application uses user data directory for config persistence
+  - ⏳ Application packages as standalone executable (.exe on Windows)
+  - ⏳ Installation creates Start Menu entry with application icon
+  - ⏳ Installation offers Desktop shortcut option
+  - ⏳ Uninstaller removes all application files and registry entries
+  - ⏳ Executable code-signed to prevent security warnings
+  - ⏳ Installation completes without requiring administrator privileges
+  - ⏳ Package size remains under 200MB
+  - ⏳ Installation completes within 30 seconds
+
+### FR-015: System Tray Integration 🔄 IN PROGRESS
+- **Description:** Provide persistent system presence and quick access
+- **Implementation Status:** IN PROGRESS - System tray integration implementation needed
+- **Acceptance Criteria:**
+  - ⏳ Application displays system tray icon when running
+  - ⏳ Tray icon shows context menu with show/hide/quit options
+  - ⏳ Application minimizes to tray instead of taskbar when minimized
+  - ⏳ Tray icon tooltip shows application status
+  - ⏳ Double-click tray icon shows/hides main window
 - **Description:** User control over application lifecycle
 - **Acceptance Criteria:**
   - Close button that completely exits application
@@ -454,7 +478,7 @@ Renderer Process
 
 ## Implementation Status Summary
 
-### ✅ COMPLETED - Core MVP (11/13 Requirements)
+### ✅ COMPLETED - Core MVP (11/15 Requirements)
 **Production-ready proof-of-concept with all essential features implemented**
 
 **Phase 1: Core System-Wide Functionality** ✅ COMPLETE
@@ -470,21 +494,25 @@ Renderer Process
 - **FR-011: Entry Undo Functionality** ✅ IMPLEMENTED - Robust undo system with file integrity validation
 - **FR-013: Comprehensive Logging** ✅ IMPLEMENTED - Detailed logging with error tracking
 
+**Phase 3: Desktop Application Integration** 🔄 IN PROGRESS
+- **FR-014: Desktop Application Distribution** 🔄 IN PROGRESS - Config persistence fixed, packaging pending
+- **FR-015: System Tray Integration** 🔄 IN PROGRESS - System tray implementation needed
+
 **Additional Implemented Features:**
 - **Security Hardening** ✅ IMPLEMENTED - Context isolation, input validation, secure IPC
 - **Smart Folder Management** ✅ IMPLEMENTED - Dynamic folder discovery and creation within vaults
 - **Configuration Memory** ✅ IMPLEMENTED - Optional setup wizard bypass for returning users
 
-### 📋 REQUIREMENTS REVIEW - Community Feedback Needed (2/13 Requirements)
+### 📋 REQUIREMENTS REVIEW - Community Feedback Needed (2/15 Requirements)
 **Features deferred for community input after initial deployment**
 - **RR-001: Windows Service Integration** (formerly FR-008) - Auto-start and background service operation
 - **RR-002: Direct Obsidian Integration** (formerly FR-012) - URI scheme and external app launching
 
 ## Success Metrics
 
-### Current Implementation Success (MVP Complete)
-**Target Status:** ACHIEVED ✅  
-**Implementation Completion:** 11/13 Core Requirements (84.6%)
+### Current Implementation Success (MVP Core Complete)
+**Target Status:** CORE ACHIEVED ✅  
+**Implementation Completion:** 11/15 Core Requirements (73.3%)
 
 ### Adoption Metrics
 - **Download Rate:** Target 100 downloads in first month

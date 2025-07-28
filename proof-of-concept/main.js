@@ -29,7 +29,7 @@ class ComprehensiveFloatingNotes {
             dpiScaleFactor: 1.0 // Store detected scale factor
         };
         
-        this.loadConfig();
+        // Config loading deferred until app is ready and paths are set
         this.initializeLogging();
     }
 
@@ -89,7 +89,7 @@ class ComprehensiveFloatingNotes {
         
         // Calculate DPI-aware dimensions
         const baseWidth = 500;
-        const baseHeight = 150;
+        const baseHeight = 180;
         const scaledWidth = Math.round(baseWidth * Math.max(1, scaleFactor * 0.8));
         const scaledHeight = Math.round(baseHeight * Math.max(1, scaleFactor * 0.8));
         
@@ -115,8 +115,8 @@ class ComprehensiveFloatingNotes {
         this.mainWindow = new BrowserWindow({
             width: windowWidth,
             height: windowHeight,
-            minWidth: Math.round(400 * Math.max(1, scaleFactor * 0.8)),
-            minHeight: Math.round(120 * Math.max(1, scaleFactor * 0.8)),
+            minWidth: Math.round(450 * Math.max(1, scaleFactor * 0.8)),
+            minHeight: Math.round(180 * Math.max(1, scaleFactor * 0.8)),
             maxWidth: Math.round(800 * Math.max(1, scaleFactor * 0.8)),
             maxHeight: Math.round(400 * Math.max(1, scaleFactor * 0.8)),
             x: x,
@@ -190,8 +190,87 @@ class ComprehensiveFloatingNotes {
     }
 
     createTray() {
-        this.log('System tray disabled - using keyboard shortcuts only');
-        this.log('Use Ctrl+Shift+N (Show) / Ctrl+Shift+H (Hide) for window control');
+        try {
+            // Create system tray icon (try multiple paths for dev/prod)
+            const iconPaths = [
+                path.join(__dirname, '..', 'build', 'tray.ico'), // Development
+                path.join(process.resourcesPath, 'app', 'build', 'tray.ico'), // Packaged
+                path.join(__dirname, 'tray.ico') // Fallback
+            ];
+            
+            let iconPath = null;
+            for (const tryPath of iconPaths) {
+                if (require('fs').existsSync(tryPath)) {
+                    iconPath = tryPath;
+                    break;
+                }
+            }
+            
+            if (!iconPath) {
+                throw new Error('Tray icon not found');
+            }
+            
+            this.tray = new Tray(iconPath);
+            
+            // Set tooltip
+            this.tray.setToolTip('Floating Bujo - Quick Note Capture');
+            
+            // Create context menu
+            const contextMenu = Menu.buildFromTemplate([
+                {
+                    label: 'Show Window',
+                    click: () => {
+                        if (this.mainWindow) {
+                            this.mainWindow.show();
+                            this.mainWindow.focus();
+                        }
+                    }
+                },
+                {
+                    label: 'Hide Window',
+                    click: () => {
+                        if (this.mainWindow) {
+                            this.mainWindow.hide();
+                        }
+                    }
+                },
+                { type: 'separator' },
+                {
+                    label: 'Reset Window Size',
+                    click: () => this.resetWindowSize()
+                },
+                { type: 'separator' },
+                {
+                    label: 'Forget Configuration',
+                    click: () => this.forgetConfiguration()
+                },
+                {
+                    label: 'Quit',
+                    click: () => this.quitApplication()
+                }
+            ]);
+            
+            this.tray.setContextMenu(contextMenu);
+            
+            // Double-click to show/hide window
+            this.tray.on('double-click', () => {
+                if (this.mainWindow) {
+                    if (this.mainWindow.isVisible()) {
+                        this.mainWindow.hide();
+                    } else {
+                        this.mainWindow.show();
+                        this.mainWindow.focus();
+                    }
+                }
+            });
+            
+            this.log('System tray created successfully');
+            this.log('Use Ctrl+Shift+N (Show) / Ctrl+Shift+H (Hide) for keyboard control');
+            
+        } catch (error) {
+            this.log(`System tray creation failed: ${error.message}`);
+            this.log('Falling back to keyboard shortcuts only');
+        }
     }
 
     setupGlobalShortcuts() {
@@ -583,6 +662,39 @@ class ComprehensiveFloatingNotes {
         }
     }
 
+    async forgetConfiguration() {
+        try {
+            // Reset configuration to defaults
+            this.config = {
+                windowPosition: { x: null, y: null },
+                windowSize: { width: null, height: null },
+                defaultSize: { width: 500, height: 180 },
+                alwaysOnTop: true,
+                autoFocus: true,
+                activesFolder: path.join(__dirname, 'test-notes'),
+                mode: 'markdown',
+                obsidianVaultPath: null,
+                setupCompleted: false,
+                dpiScaleFactor: 1.0,
+                rememberConfiguration: true
+            };
+            
+            // Delete config file
+            if (require('fs').existsSync(this.configFile)) {
+                await require('fs').promises.unlink(this.configFile);
+            }
+            
+            this.log('Configuration forgotten - setup wizard will appear on next startup');
+            
+            // Restart application
+            app.relaunch();
+            app.quit();
+            
+        } catch (error) {
+            this.log(`Error forgetting configuration: ${error.message}`);
+        }
+    }
+
     quitApplication() {
         this.log('Application quit requested');
         
@@ -600,11 +712,20 @@ class ComprehensiveFloatingNotes {
         
         await app.whenReady();
         
+        // Setup persistent storage paths in user data directory
+        const userDataPath = app.getPath('userData');
+        this.activesFolder = path.join(userDataPath, 'test-notes');
+        this.logFile = path.join(userDataPath, 'floating-notes.log');
+        this.configFile = path.join(userDataPath, 'config.json');
+        
+        // Reload config from proper location
+        await this.loadConfig();
+        
         // Setup IPC handlers first (needed for setup wizard)
         this.setupIPC();
         
         // Check if setup has been completed
-        if (!this.config.setupCompleted || !this.config.rememberConfiguration) {
+        if (!this.config.setupCompleted || this.config.rememberConfiguration === false) {
             this.log(this.config.setupCompleted ? 
                 'Configuration memory disabled - showing setup wizard' : 
                 'Setup not completed - showing setup wizard');

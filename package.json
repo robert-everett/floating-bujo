@@ -1,13 +1,15 @@
 {
-  "name": "obsidian-floating-bujo-plugin",
+  "name": "floating-bujo",
   "version": "1.0.0",
   "description": "A priority floating bullet window for note taking.",
+  "productName": "Floating Bujo",
   "main": "proof-of-concept/main.js",
-  "directories": {
-    "doc": "docs"
-  },
   "scripts": {
     "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:portable": "electron-builder --win portable",
+    "dist": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -22,6 +24,7 @@
   },
   "homepage": "https://github.com/robert-everett/obsidian-floating-bujo-plugin#readme",
   "devDependencies": {
-    "electron": "^37.2.4"
+    "electron": "^37.2.4",
+    "electron-builder": "^26.0.12"
   }
 }

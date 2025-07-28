@@ -587,25 +587,7 @@
             window.bujoHandler = new BujoInputHandler();
         });
 
-        // Expose IPC API for main process communication
-        window.electronAPI = {
-            saveNote: (noteText) => {
-                // This will be replaced by proper IPC preload script
-                return window.require('electron').ipcRenderer.invoke('save-note', noteText);
-            },
-            
-            undoLastNote: () => {
-                return window.require('electron').ipcRenderer.invoke('undo-last-note');
-            },
-            
-            hideWindow: () => {
-                return window.require('electron').ipcRenderer.invoke('hide-window');
-            },
-            
-            quitApp: () => {
-                return window.require('electron').ipcRenderer.invoke('quit-app');
-            }
-        };
+        // electronAPI is exposed via secure preload.js
     </script>
 </body>
 </html>

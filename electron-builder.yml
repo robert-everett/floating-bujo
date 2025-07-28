@@ -1,0 +1,42 @@
+appId: com.floatingbujo.app
+productName: Floating Bujo
+artifactName: ${productName}-${version}.${ext}
+
+directories:
+  output: dist
+  buildResources: build
+
+files:
+  - "proof-of-concept/**/*"
+  - "package.json"
+  - "!node_modules"
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+  icon: build/icon.ico
+  requestedExecutionLevel: asInvoker
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Floating Bujo
+  displayLanguageSelector: false
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  license: LICENSE
+
+portable:
+  artifactName: ${productName}-${version}-portable.${ext}
+
+publish:
+  provider: github
+  owner: robert-everett
+  repo: obsidian-floating-bujo-plugin
