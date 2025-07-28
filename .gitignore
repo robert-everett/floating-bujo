@@ -8,6 +8,7 @@ yarn-error.log*
 dist/
 build/
 out/
+releases/
 *.tgz
 
 # Obsidian plugin specific
@@ -109,6 +110,3 @@ temp/
 
 # Claude AI assistant files
 .claude/
-
-# VS Workspace
-floating-bujo-workspace.code-workspace

@@ -1,5 +1,5 @@
 # Floating Bujo
-A priority floating bullet window for note taking in Markdown, devloped by human prompt engineering using Claude Code. Designed for simplicity, Floating Bujo supports two modes; Obsidian Mode or Markdown Mode. Obsidian Mode enables users to specify a Vault and location therein to enter bullets. While the Markdown Mode is for bullet entries into a user defined space. Once configured, a floating window will always be available for 'Active' note taking. Setup can be remembered, hotkeys are provided for windown hiding and restoring, and a note undo feature is availble. 
+A priority floating bullet window for note taking in Markdown, devloped by human prompt engineering using Claude Code. Designed for simplicity, Floating Bujo supports a single mode called Markdown Mode. Markdown Mode is for bullet entries into a user defined space. Once configured, a floating window will always be available for 'Active' note taking. Setup can be remembered, hotkeys are provided for windown hiding and restoring, and a note undo feature is availble. 
 
 # Project Brief
 This project is open-sourced, and is strictly aimed to be Claude designed code through human prompt engineering. The human contributor shall refer to [Contribution Guidelines](CONTRIBUTING.md). 

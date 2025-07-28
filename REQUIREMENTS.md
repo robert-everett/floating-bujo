@@ -8,33 +8,17 @@
 **Framework:** Electron + Node.js  
 **License:** MIT  
 
-**Description:** A standalone system-wide Electron application that enables seamless bullet journal note capture without interrupting workflow. Supports both Obsidian users through external integration and general markdown enthusiasts through simple file management. This is **not an Obsidian plugin** but rather an independent desktop application that works alongside Obsidian.
+**Description:** A standalone system-wide Electron application that enables seamless bullet journal note capture without interrupting workflow. Works with any markdown system through simple file management.
 
 ## Core Value Proposition
 
-- **Standalone desktop application** - Independent Electron app, not an Obsidian plugin
+- **Standalone desktop application** - Independent Electron app
 - **Zero-friction bullet journaling** - Always accessible, minimal interface
 - **System-wide availability** - Works over any application (browsers, games, IDEs)
-- **Dual-mode support** - External Obsidian integration OR general markdown workflow
-- **Persistent operation** - Runs as Windows service, survives restarts
+- **Universal markdown support** - Works with any folder structure or markdown system
 - **Principled simplicity** - Capture thoughts instantly without configuration complexity
 
 ## Functional Requirements
-
-### FR-001: Dual-Mode Setup and Detection ✅ IMPLEMENTED
-- **Description:** Intelligent detection and setup for Obsidian or Markdown mode
-- **Implementation Status:** COMPLETE - Full setup wizard with auto-detection, user override, and configuration persistence
-- **Acceptance Criteria:**
-  - ✅ Application scans for Obsidian installation on first startup
-  - ✅ Searches common locations for .obsidian folders (vaults) 
-  - ✅ Presents setup wizard with detected mode recommendations
-  - ✅ User can override detection and choose preferred mode
-  - ✅ Mode selection persists across sessions
-  - ✅ Clear visual indication of current mode in main window
-  - ✅ One-time setup process with option to reconfigure later
-  - ✅ Smart subfolder discovery and selection within Obsidian vaults
-  - ✅ New folder creation capability within vault structure
-  - ✅ Configuration memory option for faster startup
 
 ### FR-002: System-Wide Floating Window ✅ IMPLEMENTED
 - **Description:** Application shall provide an always-visible floating window
@@ -44,7 +28,6 @@
   - ✅ Window remains accessible regardless of current application focus
   - ✅ Window persists across user sessions
   - ✅ User can interact with window without losing focus from current application
-  - ✅ Consistent behavior across both Obsidian and Markdown modes
   - ✅ Global keyboard shortcuts (Ctrl+Shift+N show, Ctrl+Shift+H hide)
   - ✅ DPI-aware scaling for high-resolution displays
   - ✅ Smart positioning to prevent off-screen placement
@@ -76,39 +59,10 @@
   - ✅ Consistent window management across both modes
   - ✅ DPI-aware scaling for different screen resolutions
   - ✅ Smart bounds checking to prevent off-screen windows
-- **Description:** Intelligent Obsidian vault integration with user-controlled folder selection
-- **Acceptance Criteria:**
-  - User specifies Obsidian vault path on first startup
-  - Vault selection persists across sessions (configurable)
-  - New file created daily with format: `actives-YYYYMMDD.md`
-  - File created on first note of the day
-  - Subsequent notes append to existing daily file
-  - Handles date transitions correctly (midnight rollover)
-  - Vault path validation (checks for `.obsidian` folder)
-  - Error handling for invalid or moved vaults
 
-### FR-005: Obsidian Mode File Management ✅ IMPLEMENTED
-- **Description:** Intelligent Obsidian vault integration with subfolder organization
-- **Implementation Status:** COMPLETE - Full Obsidian integration with smart folder management and validation
-- **Acceptance Criteria:**
-  - ✅ User selects Obsidian vault from detected vaults during setup
-  - ✅ User can optionally specify subfolder within vault for active notes
-  - ✅ Subfolder selection available in setup wizard with browse functionality
-  - ✅ Dynamic folder discovery with hierarchical display
-  - ✅ Vault and subfolder selection persists across sessions
-  - ✅ Daily files created in vault root or configured subfolder
-  - ✅ New file created daily with format: `actives-YYYYMMDD.md`
-  - ✅ File created on first entry of the day
-  - ✅ Subsequent entries append to existing daily file
-  - ✅ Handles date transitions correctly (midnight rollover with local timezone)
-  - ✅ Vault path validation (checks for `.obsidian` folder)
-  - ✅ Subfolder validation and automatic creation if needed
-  - ✅ Error handling for invalid or moved vaults
-  - ✅ New folder creation within vault structure
-
-### FR-006: Markdown Mode File Management ✅ IMPLEMENTED
-- **Description:** Simple folder-based file management for general markdown users
-- **Implementation Status:** COMPLETE - Full markdown mode with folder validation and persistence
+### FR-005: File Management ✅ IMPLEMENTED
+- **Description:** Simple folder-based file management for markdown systems
+- **Implementation Status:** COMPLETE - Universal folder management with validation and persistence
 - **Acceptance Criteria:**
   - ✅ User selects target folder during setup wizard
   - ✅ Folder selection persists across sessions
@@ -131,12 +85,11 @@
 - **Description:** Consistent, searchable bullet journal entry format
 - **Implementation Status:** COMPLETE - Mode-specific formatting with proper timestamps and tagging
 - **Acceptance Criteria:**
-  - ✅ Format: `HH:MM:SS #active {entry_content}` (Obsidian mode)
+  - ✅ Format: `HH:MM:SS #active {entry_content}` (optional #active tag)
   - ✅ Timestamp uses 24-hour format with local timezone
   - ✅ Each entry on separate line
   - ✅ Preserves line breaks in multi-line entries
-  - ✅ Hashtag `#active` for Obsidian compatibility (Obsidian mode)
-  - ✅ Simplified format for Markdown mode: `HH:MM:SS {entry_content}`
+  - ✅ Optional hashtag `#active` for markdown system compatibility
   - ✅ Consistent timestamp generation with proper local time handling
 - **Description:** Application runs as Windows system service
 - **Acceptance Criteria:**
@@ -202,28 +155,6 @@
   - System tray integration (optional)
   - Confirmation dialog for quit action
 
-### FR-009: Vault Configuration and Setup
-- **Description:** First-time vault configuration and management
-- **Acceptance Criteria:**
-  - Startup wizard prompts for Obsidian vault path on first run
-  - Vault path validation (must contain `.obsidian` folder)
-  - Option to "Remember this vault" with checkbox
-  - Ability to change vault path through settings/menu
-  - Auto-detection suggestions for common vault locations
-  - Clear error messages for invalid vault paths
-  - Fallback to manual folder selection if no vault detected
-
-### FR-010: Dynamic Folder Selection
-- **Description:** Real-time folder selection within the vault
-- **Acceptance Criteria:**
-  - Dropdown/button in floating window for folder selection
-  - Lists all folders within the selected vault
-  - Shows folder hierarchy (nested folders with indentation)
-  - "Create new folder" option in dropdown
-  - Selected folder persists until manually changed
-  - Files created in: `{vault_path}/{selected_folder}/actives-YYYYMMDD.md`
-  - Root vault option (no subfolder)
-  - Refresh folder list when vault structure changes
 - **Description:** Allow users to undo recently submitted notes
 - **Acceptance Criteria:**
   - Undo button appears immediately after successful note submission
@@ -246,23 +177,6 @@
   - Fallback to opening vault folder if Obsidian URI fails
   - Button shows appropriate state (Obsidian running/not running)
   - Optional: Auto-switch to current folder in Obsidian file explorer
-- **Description:** Real-time folder selection within the vault
-- **Acceptance Criteria:**
-  - Dropdown/button in floating window for folder selection
-  - Lists all folders within the selected vault
-  - Shows folder hierarchy (nested folders with indentation)
-  - "Create new folder" option in dropdown
-  - Selected folder persists until manually changed
-  - Files created in: `{vault_path}/{selected_folder}/actives-YYYYMMDD.md`
-  - Root vault option (no subfolder)
-  - Refresh folder list when vault structure changes
-- **Description:** Comprehensive logging for troubleshooting
-- **Acceptance Criteria:**
-  - Service logs with timestamps and severity levels
-  - Application logs for note operations
-  - Error tracking and reporting
-  - Log rotation to prevent disk space issues
-  - Configurable log levels (DEBUG, INFO, WARN, ERROR)
 
 ## Requirements Review 
 
@@ -283,25 +197,17 @@
   - Service can be managed via Windows Services console
   - Automatic restart on crash (max 5 attempts)
   - Clean shutdown handling
-  - Works consistently across both Obsidian and Markdown modes
-
-### RR-002: Direct Obsidian Integration (formerly FR-012)
-- **Description:** Direct integration with Obsidian application for seamless workflow integration
-- **Priority:** MEDIUM - Nice-to-have for Obsidian power users
-- **Implementation Complexity:** MEDIUM - Requires Obsidian URI scheme integration and process detection
+### RR-002: Advanced Integration Features
+- **Description:** Direct integration with external markdown applications
+- **Priority:** LOW - Nice-to-have for power users
+- **Implementation Complexity:** MEDIUM - Requires application detection and URI schemes
 - **Community Feedback Needed:**
-  - How important is "Open in Obsidian" button functionality?
-  - Would automatic file navigation to current daily note be valuable?
-  - What other Obsidian integrations would be most useful?
-- **Acceptance Criteria:**
-  - "Open in Obsidian" button/icon in floating window
-  - Opens Obsidian to the current vault if not already open
-  - Navigates to the current daily file (actives-YYYYMMDD.md)
-  - Focuses on the last submitted entry
-  - Uses Obsidian URI scheme: `obsidian://open?vault=X&file=Y`
-  - Fallback to opening vault folder if Obsidian URI fails
-  - Button shows appropriate state (Obsidian running/not running)
-  - Optional: Auto-switch to current folder in Obsidian file explorer
+  - Would "Open in [App]" button functionality be valuable?
+  - What external integrations would be most useful?
+- **Potential Features:**
+  - Integration with popular markdown editors
+  - URI scheme support for external applications
+  - File navigation to current daily note
 
 ### RR-003: Advanced Window Management
 - **Description:** Enhanced window management features for power users
@@ -361,56 +267,37 @@
 ## Technical Architecture
 
 ### TA-001: Application Structure
-```
-Main Process (Electron)
-├── Mode Detection & Setup
-├── Window Manager
-├── File Operations (Mode-Specific)
-├── Configuration Manager
-└── IPC Handler
 
-Service Wrapper
-├── Process Monitor
-├── Auto-restart Logic
-├── Logging System
-└── Health Checks
+**Main Process (Electron)**
+- Window Manager
+- File Operations
+- Configuration Manager
+- IPC Handler
 
-Renderer Process
-├── Setup Wizard
-├── UI Components (Mode-Aware)
-├── Event Handlers
-└── Status Management
-```
+**Renderer Process**
+- Setup Wizard
+- UI Components
+- Event Handlers
+- Status Management
 
 ### TA-002: Data Flow
-**Obsidian Mode:**
-1. User types bujo entry in floating window
-2. Enter key triggers entry submission
-3. Main process receives entry via IPC
-4. Timestamp added and Obsidian format applied (`HH:MM:SS #active {entry}`)
-5. Entry appended to daily file in vault
-6. Success/failure feedback to UI
-7. Undo button appears with 10-second timer
-8. Operation logged to service log
 
-**Markdown Mode:**
+**Entry Capture Flow:**
 1. User types bujo entry in floating window
 2. Enter key triggers entry submission
 3. Main process receives entry via IPC
-4. Timestamp added and simple format applied (`HH:MM:SS {entry}`)
+4. Timestamp added and format applied (`HH:MM:SS [#active] {entry}`)
 5. Entry appended to daily file in selected folder
 6. Success/failure feedback to UI
 7. Undo button appears with 10-second timer
-8. Operation logged to service log
+8. Operation logged
 
 **Setup Flow:**
-1. Application starts and detects Obsidian installation
-2. Scans for .obsidian folders in common locations
-3. Presents setup wizard with recommendations
-4. User selects mode (Obsidian or Markdown)
-5. For Obsidian mode: User selects vault and optional subfolder
-6. For Markdown mode: User selects target folder
-7. Settings saved and main window launched
+1. Application starts on first launch
+2. Presents setup wizard
+3. User selects target folder for notes
+4. User configures optional #active tag usage
+5. Settings saved and main window launched
 
 **Undo Flow:**
 1. User clicks undo button or presses Ctrl+Z
@@ -419,19 +306,13 @@ Renderer Process
 4. Visual confirmation of undo action
 5. Undo button disappears
 
-**Obsidian Integration Flow (Obsidian Mode Only):**
-1. User clicks "Open in Obsidian" button
-2. Application constructs Obsidian URI with vault and file parameters
-3. System opens URI (launches/focuses Obsidian)
-4. Obsidian navigates to specified vault and daily file
-
 ### TA-003: Configuration
-- **Config File:** JSON format in application directory
-- **User Settings:** Window position, size, selected mode
-- **Mode-Specific Settings:** 
-  - Obsidian Mode: Vault path, vault name, subfolder path
-  - Markdown Mode: Target folder path
-- **Service Settings:** Log levels, restart attempts, health check interval
+- **Config File:** JSON format in user data directory
+- **User Settings:** Window position, size, target folder
+- **Application Settings:** 
+  - Target folder path for notes
+  - Optional #active tag usage
+  - Setup completion status
 
 ## User Stories
 
@@ -484,12 +365,11 @@ Renderer Process
 **Phase 1: Core System-Wide Functionality** ✅ COMPLETE
 - **FR-002: System-Wide Floating Window** ✅ IMPLEMENTED - DPI-aware floating window with global shortcuts
 - **FR-003: Bujo Input Interface** ✅ IMPLEMENTED - Auto-expanding textarea with full keyboard support
-- **FR-007: Entry Formatting** ✅ IMPLEMENTED - Mode-specific formatting with proper timestamps
-- **FR-005: Obsidian Mode File Management** ✅ IMPLEMENTED - Complete vault integration with subfolder support
-- **FR-006: Markdown Mode File Management** ✅ IMPLEMENTED - Full folder-based file management
+- **FR-007: Entry Formatting** ✅ IMPLEMENTED - Flexible formatting with proper timestamps
+- **FR-005: File Management** ✅ IMPLEMENTED - Universal folder-based file management
 
 **Phase 2: Enhanced User Experience** ✅ COMPLETE  
-- **FR-001: Dual-Mode Setup** ✅ IMPLEMENTED - Intelligent setup wizard with auto-detection and configuration memory
+- **FR-001: Setup Wizard** ✅ IMPLEMENTED - Simple setup wizard with folder selection
 - **FR-004: Advanced Window Management** ✅ IMPLEMENTED - Complete window management with DPI awareness
 - **FR-011: Entry Undo Functionality** ✅ IMPLEMENTED - Robust undo system with file integrity validation
 - **FR-013: Comprehensive Logging** ✅ IMPLEMENTED - Detailed logging with error tracking
@@ -547,11 +427,10 @@ Renderer Process
 
 ### Technical Constraints
 - Windows-only for initial release
-- **Standalone Electron application** (not an Obsidian plugin)
-- Requires administrator privileges for service installation
-- Obsidian mode requires Obsidian installation (validated during setup)
-- Markdown mode works with any folder structure
-- External integration with Obsidian via URI scheme and file system
+- **Standalone Electron application**
+- Standard user permissions sufficient for operation
+- Works with any folder structure and markdown system
+- Universal compatibility with markdown editors
 
 ### Business Constraints
 - Open source development model
@@ -559,8 +438,7 @@ Renderer Process
 - Community-driven feature development
 
 ### Assumptions
-- Obsidian users have basic vault knowledge
-- Markdown users understand folder organization
+- Users understand basic folder organization
 - Users comfortable with simple setup wizard
 - Primary use case is individual productivity (not team collaboration)
 

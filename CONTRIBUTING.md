@@ -1,4 +1,3 @@
-```
 # Contributing Guide
 - Draft state / accepting suggestions
 
@@ -68,4 +67,3 @@ floating-bujo/
 2. Choose a contribution path.
 3. Find issues with the appropriate label.
 5. Submit a PR with code, tests, and documentation.
-```

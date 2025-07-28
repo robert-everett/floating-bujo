@@ -293,34 +293,10 @@
             <div class="progress-fill" id="progressFill"></div>
         </div>
 
-        <div class="step-indicator" id="stepIndicator">Step 1 of 3</div>
+        <div class="step-indicator" id="stepIndicator">Step 1 of 2</div>
 
-        <!-- Step 1: Mode Selection -->
+        <!-- Step 1: Folder Selection -->
         <div class="setup-step active" id="step1">
-            <div class="step-title">Choose Your Mode</div>
-            <div class="step-content">
-                <div class="mode-option" id="obsidianMode" data-mode="obsidian">
-                    <div class="status" id="obsidianStatus">Checking...</div>
-                    <div class="icon">🔮</div>
-                    <div class="title">Obsidian Mode</div>
-                    <div class="description">
-                        Integrate with your existing Obsidian vault. Notes will be saved directly to your vault with proper linking and tagging.
-                    </div>
-                </div>
-
-                <div class="mode-option" id="markdownMode" data-mode="markdown">
-                    <div class="status available">Available</div>
-                    <div class="icon">📝</div>
-                    <div class="title">Markdown Mode</div>
-                    <div class="description">
-                        Save notes as plain markdown files. Perfect for users who prefer simple file management or use other note-taking apps.
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Step 2: Folder Configuration -->
-        <div class="setup-step" id="step2">
             <div class="step-title">Configure Storage Location</div>
             <div class="step-content">
                 <div class="folder-input">
@@ -331,37 +307,18 @@
                     </div>
                     <div class="validation-message" id="folderValidation" style="display: none;"></div>
                 </div>
-
-                <div id="obsidianVaultInfo" style="display: none;">
-                    <div style="margin-top: 16px; padding: 16px; background: rgba(14, 165, 233, 0.1); border-radius: 8px; border: 1px solid rgba(14, 165, 233, 0.3);">
-                        <div style="font-weight: 500; margin-bottom: 8px;">Obsidian Integration</div>
-                        <div style="font-size: 13px; color: #a0a0a0; line-height: 1.4;">
-                            Your notes will be saved to a specific folder within your Obsidian vault. Choose a subfolder below to organize your active notes.
-                        </div>
-                    </div>
-                    
-                    <div class="folder-input" style="margin-top: 16px;">
-                        <label for="subfolderSelect">Subfolder within vault:</label>
-                        <div class="folder-row">
-                            <select id="subfolderSelect" style="flex: 1; background: #1e1e1e; border: 1px solid #555; border-radius: 4px; padding: 8px 12px; color: #e0e0e0; font-size: 14px;">
-                                <option value="">Loading folders...</option>
-                            </select>
-                            <button class="browse-btn" id="browseSubfolderBtn">Browse</button>
-                        </div>
-                        <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
-                            <input type="text" id="newFolderName" placeholder="New folder name..." style="flex: 1; background: #1e1e1e; border: 1px solid #555; border-radius: 4px; padding: 6px 8px; color: #e0e0e0; font-size: 12px; display: none;">
-                            <button class="browse-btn" id="createFolderBtn" style="font-size: 12px; padding: 6px 12px;">+ New Folder</button>
-                        </div>
-                        <div style="font-size: 12px; color: #a0a0a0; margin-top: 4px;">
-                            Select from existing folders or create a new one
-                        </div>
+                
+                <div style="margin-top: 16px; padding: 16px; background: rgba(14, 165, 233, 0.1); border-radius: 8px; border: 1px solid rgba(14, 165, 233, 0.3);">
+                    <div style="font-weight: 500; margin-bottom: 8px;">Universal Markdown Support</div>
+                    <div style="font-size: 13px; color: #a0a0a0; line-height: 1.4;">
+                        Choose any folder to save your notes as markdown files. Works with Obsidian vaults, other note-taking apps, or simple folder organization.
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Step 3: Summary -->
-        <div class="setup-step" id="step3">
+        <!-- Step 2: Summary -->
+        <div class="setup-step" id="step2">
             <div class="step-title">Setup Complete</div>
             <div class="step-content">
                 <div style="margin-bottom: 24px;">
@@ -371,7 +328,7 @@
                     
                     <div class="summary-item">
                         <div class="summary-label">Mode:</div>
-                        <div class="summary-value" id="summaryMode">-</div>
+                        <div class="summary-value">Universal Markdown</div>
                     </div>
                     
                     <div class="summary-item">
@@ -400,6 +357,7 @@
             </div>
         </div>
 
+
         <div class="navigation">
             <button class="nav-btn secondary" id="backBtn" onclick="previousStep()" disabled>Back</button>
             <div style="flex: 1;"></div>
@@ -416,89 +374,41 @@
         // Initialize setup wizard
         document.addEventListener('DOMContentLoaded', () => {
             updateProgress();
-            detectObsidian();
+            updateNavigation();
             setupEventListeners();
+            suggestDefaultFolder();
         });
 
-        function setupEventListeners() {
-            // Mode selection
-            document.getElementById('obsidianMode').addEventListener('click', () => selectMode('obsidian'));
-            document.getElementById('markdownMode').addEventListener('click', () => selectMode('markdown'));
-            
-            // Folder browsing
-            document.getElementById('browseBtn').addEventListener('click', browseFolder);
-            document.getElementById('folderPath').addEventListener('input', validateFolder);
-            
-            // Subfolder management (for Obsidian mode)
-            document.getElementById('browseSubfolderBtn').addEventListener('click', browseSubfolder);
-            document.getElementById('subfolderSelect').addEventListener('change', onSubfolderSelect);
-            document.getElementById('createFolderBtn').addEventListener('click', toggleCreateFolder);
-            document.getElementById('newFolderName').addEventListener('keypress', handleNewFolderKeypress);
-        }
-
-        async function detectObsidian() {
+        async function suggestDefaultFolder() {
             try {
-                const result = await window.electronAPI.detectObsidian();
-                const statusEl = document.getElementById('obsidianStatus');
-                
-                if (result.found) {
-                    statusEl.textContent = 'Available';
-                    statusEl.className = 'status available';
-                    
-                    // Store detected vault path for later use
-                    setupConfig.detectedVaultPath = result.vaultPath;
-                } else {
-                    statusEl.textContent = 'Not Found';
-                    statusEl.className = 'status not-found';
+                const defaultPath = await window.electronAPI.getDefaultNotesPath();
+                if (defaultPath) {
+                    document.getElementById('folderPath').value = defaultPath;
+                    selectedFolder = defaultPath;
+                    setupConfig.folderPath = defaultPath;
+                    validateFolder();
                 }
             } catch (error) {
-                console.error('Error detecting Obsidian:', error);
-                const statusEl = document.getElementById('obsidianStatus');
-                statusEl.textContent = 'Error';
-                statusEl.className = 'status not-found';
+                console.error('Error getting default path:', error);
             }
         }
 
-        function selectMode(mode) {
-            selectedMode = mode;
-            setupConfig.mode = mode;
-            
-            // Update UI
-            document.querySelectorAll('.mode-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            
-            document.getElementById(mode + 'Mode').classList.add('selected');
-            
-            // Enable next button immediately
-            const nextBtn = document.getElementById('nextBtn');
-            nextBtn.disabled = false;
-            nextBtn.textContent = 'Next';
-            
-            // Auto-advance after 1.5 seconds for better UX
-            setTimeout(() => {
-                if (currentStep === 1 && selectedMode === mode) {
-                    // Update button text to show auto-advance
-                    nextBtn.textContent = 'Proceeding...';
-                    nextBtn.style.background = '#10b981';
-                    
-                    setTimeout(() => {
-                        nextStep();
-                    }, 500);
-                }
-            }, 1500);
+        function setupEventListeners() {
+            // Folder browsing
+            document.getElementById('browseBtn').addEventListener('click', browseFolder);
+            document.getElementById('folderPath').addEventListener('input', validateFolder);
         }
 
+
+
         function nextStep() {
-            if (currentStep < 3) {
+            if (currentStep < 2) {
                 currentStep++;
                 showStep(currentStep);
                 updateProgress();
                 updateNavigation();
                 
                 if (currentStep === 2) {
-                    setupFolderStep();
-                } else if (currentStep === 3) {
                     setupSummaryStep();
                 }
             } else {
@@ -525,7 +435,7 @@
         }
 
         function updateProgress() {
-            const progress = ((currentStep - 1) / 2) * 100;
+            const progress = ((currentStep - 1) / 1) * 100;
             document.getElementById('progressFill').style.width = progress + '%';
         }
 
@@ -553,135 +463,11 @@
             return true;
         }
 
-        function setupFolderStep() {
-            const folderLabel = document.getElementById('folderLabel');
-            const obsidianInfo = document.getElementById('obsidianVaultInfo');
-            
-            if (selectedMode === 'obsidian') {
-                folderLabel.textContent = 'Obsidian Vault:';
-                obsidianInfo.style.display = 'block';
-                
-                // Pre-fill with detected vault if available
-                if (setupConfig.detectedVaultPath) {
-                    document.getElementById('folderPath').value = setupConfig.detectedVaultPath;
-                    selectedFolder = setupConfig.detectedVaultPath;
-                    validateFolder();
-                    // Load vault folders
-                    loadVaultFolders(setupConfig.detectedVaultPath);
-                }
-            } else {
-                folderLabel.textContent = 'Notes Folder:';
-                obsidianInfo.style.display = 'none';
-                
-                // Suggest default folder
-                const defaultPath = window.electronAPI.getDefaultNotesPath();
-                if (defaultPath) {
-                    document.getElementById('folderPath').value = defaultPath;
-                    selectedFolder = defaultPath;
-                    validateFolder();
-                }
-            }
-        }
 
-        async function loadVaultFolders(vaultPath) {
-            if (!vaultPath) return;
-            
-            const select = document.getElementById('subfolderSelect');
-            select.innerHTML = '<option value="">Loading folders...</option>';
-            
-            try {
-                const result = await window.electronAPI.discoverVaultFolders(vaultPath);
-                
-                if (result.success && result.folders) {
-                    select.innerHTML = '';
-                    
-                    result.folders.forEach(folder => {
-                        const option = document.createElement('option');
-                        option.value = folder.path;
-                        option.textContent = folder.name;
-                        if (folder.isRoot) {
-                            option.style.fontWeight = 'bold';
-                        }
-                        select.appendChild(option);
-                    });
-                    
-                    // Select vault root by default
-                    select.value = '';
-                    onSubfolderSelect();
-                } else {
-                    select.innerHTML = '<option value="">Error loading folders</option>';
-                }
-            } catch (error) {
-                console.error('Error loading vault folders:', error);
-                select.innerHTML = '<option value="">Error loading folders</option>';
-            }
-        }
 
-        function onSubfolderSelect() {
-            const select = document.getElementById('subfolderSelect');
-            const selectedPath = select.value;
-            
-            setupConfig.subfolderPath = selectedPath;
-            setupConfig.finalPath = selectedFolder + (selectedPath ? '/' + selectedPath : '');
-            
-            // Enable next button since we have a valid selection
-            document.getElementById('nextBtn').disabled = false;
-        }
 
-        function toggleCreateFolder() {
-            const input = document.getElementById('newFolderName');
-            const btn = document.getElementById('createFolderBtn');
-            
-            if (input.style.display === 'none') {
-                input.style.display = 'block';
-                input.focus();
-                btn.textContent = 'Cancel';
-            } else {
-                input.style.display = 'none';
-                input.value = '';
-                btn.textContent = '+ New Folder';
-            }
-        }
 
-        async function handleNewFolderKeypress(e) {
-            if (e.key === 'Enter') {
-                await createNewFolder();
-            } else if (e.key === 'Escape') {
-                toggleCreateFolder();
-            }
-        }
 
-        async function createNewFolder() {
-            const input = document.getElementById('newFolderName');
-            const folderName = input.value.trim();
-            
-            if (!folderName) {
-                alert('Please enter a folder name');
-                return;
-            }
-            
-            if (!selectedFolder) {
-                alert('Please select a vault first');
-                return;
-            }
-            
-            try {
-                const result = await window.electronAPI.createVaultFolder(selectedFolder, folderName);
-                
-                if (result.success) {
-                    // Reload folders and select the new one
-                    await loadVaultFolders(selectedFolder);
-                    document.getElementById('subfolderSelect').value = result.folderPath;
-                    onSubfolderSelect();
-                    toggleCreateFolder();
-                } else {
-                    alert('Error creating folder: ' + result.error);
-                }
-            } catch (error) {
-                console.error('Error creating folder:', error);
-                alert('Error creating folder: ' + error.message);
-            }
-        }
 
         async function browseFolder() {
             try {
@@ -708,7 +494,7 @@
             }
             
             try {
-                const result = await window.electronAPI.validateFolder(path, selectedMode);
+                const result = await window.electronAPI.validateFolder(path, 'markdown');
                 
                 if (result.valid) {
                     validationEl.textContent = result.message || 'Folder is valid and accessible';
@@ -716,13 +502,7 @@
                     validationEl.style.display = 'block';
                     selectedFolder = path;
                     setupConfig.folderPath = path;
-                    
-                    // For Obsidian mode, load folders and validate
-                    if (selectedMode === 'obsidian') {
-                        await loadVaultFolders(path);
-                    } else {
-                        document.getElementById('nextBtn').disabled = false;
-                    }
+                    document.getElementById('nextBtn').disabled = false;
                 } else {
                     validationEl.textContent = result.message || 'Invalid folder path';
                     validationEl.className = 'validation-message error';
@@ -739,40 +519,9 @@
             }
         }
         
-        async function browseSubfolder() {
-            if (!selectedFolder) {
-                alert('Please select an Obsidian vault first');
-                return;
-            }
-            
-            try {
-                const result = await window.electronAPI.selectSubfolder(selectedFolder);
-                if (result.path) {
-                    // Extract the relative path from the vault root
-                    const relativePath = result.path.replace(selectedFolder, '').replace(/^[\\\/]/, '');
-                    
-                    // Update the select dropdown
-                    const select = document.getElementById('subfolderSelect');
-                    select.value = relativePath;
-                    onSubfolderSelect();
-                }
-            } catch (error) {
-                console.error('Error selecting subfolder:', error);
-            }
-        }
 
         function setupSummaryStep() {
-            document.getElementById('summaryMode').textContent = 
-                selectedMode === 'obsidian' ? 'Obsidian Integration' : 'Markdown Files';
-            
-            let displayPath = setupConfig.finalPath || selectedFolder;
-            
-            // For Obsidian mode with subfolder, show both vault and subfolder
-            if (selectedMode === 'obsidian' && setupConfig.subfolderPath) {
-                displayPath = `${selectedFolder} → ${setupConfig.subfolderPath}`;
-            }
-            
-            document.getElementById('summaryFolder').textContent = displayPath;
+            document.getElementById('summaryFolder').textContent = selectedFolder;
         }
 
         async function finishSetup() {

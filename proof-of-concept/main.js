@@ -23,10 +23,9 @@ class ComprehensiveFloatingNotes {
             alwaysOnTop: true,
             autoFocus: true,
             activesFolder: this.activesFolder,
-            mode: 'markdown', // 'obsidian' or 'markdown'
-            obsidianVaultPath: null,
             setupCompleted: false,
-            dpiScaleFactor: 1.0 // Store detected scale factor
+            dpiScaleFactor: 1.0, // Store detected scale factor
+            useActiveTag: true // Whether to include #active tag in entries
         };
         
         // Config loading deferred until app is ready and paths are set
@@ -138,7 +137,8 @@ class ComprehensiveFloatingNotes {
                 webSecurity: true,               // ✅ Security: Enable web security (default)
                 allowRunningInsecureContent: false, // ✅ Security: Block insecure content
                 experimentalFeatures: false,     // ✅ Security: Disable experimental features
-                sandbox: false                   // Allow file access for note saving
+                sandbox: true,                   // ✅ Security: Enable sandbox
+                allowedCSPHashAlgorithms: ['sha256'], // ✅ Security: Restrict CSP algorithms
             }
         });
 
@@ -562,7 +562,8 @@ class ComprehensiveFloatingNotes {
         const filePath = await this.createOrGetDailyFile();
         const now = new Date();
         const timeStr = now.toTimeString().slice(0, 8);
-        const noteEntry = `${timeStr} #active ${noteText}\n`;
+        const activeTag = this.config.useActiveTag ? '#active ' : '';
+        const noteEntry = `${timeStr} ${activeTag}${noteText}\n`;
         
         // Store the entry details for potential undo
         this.lastSavedEntry = {
@@ -664,20 +665,19 @@ class ComprehensiveFloatingNotes {
 
     async forgetConfiguration() {
         try {
-            // Reset configuration to defaults
-            this.config = {
-                windowPosition: { x: null, y: null },
-                windowSize: { width: null, height: null },
-                defaultSize: { width: 500, height: 180 },
-                alwaysOnTop: true,
-                autoFocus: true,
-                activesFolder: path.join(__dirname, 'test-notes'),
-                mode: 'markdown',
-                obsidianVaultPath: null,
-                setupCompleted: false,
-                dpiScaleFactor: 1.0,
-                rememberConfiguration: true
-            };
+            const { dialog } = require('electron');
+            
+            // Show confirmation dialog
+            const response = await dialog.showMessageBox(null, {
+                type: 'question',
+                buttons: ['Forget Configuration', 'Cancel'],
+                defaultId: 1,
+                title: 'Forget Configuration',
+                message: 'Are you sure you want to forget your configuration?',
+                detail: 'This will reset all settings and show the setup wizard on next startup. The application will restart.'
+            });
+            
+            if (response.response !== 0) return;
             
             // Delete config file
             if (require('fs').existsSync(this.configFile)) {
@@ -686,9 +686,19 @@ class ComprehensiveFloatingNotes {
             
             this.log('Configuration forgotten - setup wizard will appear on next startup');
             
+            // Close current windows before restart
+            if (this.mainWindow) {
+                this.mainWindow.close();
+            }
+            if (this.setupWindow) {
+                this.setupWindow.close();
+            }
+            
             // Restart application
-            app.relaunch();
-            app.quit();
+            setTimeout(() => {
+                app.relaunch();
+                app.quit();
+            }, 100);
             
         } catch (error) {
             this.log(`Error forgetting configuration: ${error.message}`);

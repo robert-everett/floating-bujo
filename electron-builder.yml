@@ -10,6 +10,13 @@ files:
   - "proof-of-concept/**/*"
   - "package.json"
   - "!node_modules"
+  - "!tests"
+  - "!docs"
+  - "!releases"
+  - "!dist"
+
+npmRebuild: false
+buildDependenciesFromSource: false
 
 win:
   target:
@@ -32,6 +39,7 @@ nsis:
   installerIcon: build/icon.ico
   uninstallerIcon: build/icon.ico
   license: LICENSE
+  artifactName: floating-bujo-setup-${version}.${ext}
 
 portable:
   artifactName: ${productName}-${version}-portable.${ext}
